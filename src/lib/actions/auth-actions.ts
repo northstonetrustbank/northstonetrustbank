@@ -172,17 +172,33 @@ export async function submitKycAction(_prev: FormState, formData: FormData): Pro
     uploads.push({ side, file });
   }
 
-  // Replace anything from an earlier attempt so a resubmission doesn't stack up.
+  // Store the new photos BEFORE touching the old ones. If the bucket is
+  // unreachable — misconfigured storage, a network blip — an applicant who was
+  // resubmitting would otherwise be left with neither set and no explanation.
+  const stored: { side: string; file: File; storedName: string }[] = [];
+  try {
+    for (const { side, file } of uploads) {
+      const ext = path.extname(file.name).toLowerCase() || ".bin";
+      const storedName = `${randomBytes(16).toString("hex")}${ext}`;
+      await uploadFile(KYC_BUCKET, storedName, Buffer.from(await file.arrayBuffer()), file.type);
+      stored.push({ side, file, storedName });
+    }
+  } catch {
+    // Roll back whatever did land so the bucket doesn't collect orphans.
+    if (stored.length > 0) {
+      await deleteFiles(KYC_BUCKET, stored.map((s) => s.storedName)).catch(() => {});
+    }
+    return { error: t.errors.uploadFailed };
+  }
+
+  // Only now retire the earlier attempt, so a resubmission doesn't stack up.
   const previous = await db.kycDocument.findMany({ where: { userId: user.id } });
   if (previous.length > 0) {
     await deleteFiles(KYC_BUCKET, previous.map((d) => d.storedName)).catch(() => {});
     await db.kycDocument.deleteMany({ where: { userId: user.id } });
   }
 
-  for (const { side, file } of uploads) {
-    const ext = path.extname(file.name).toLowerCase() || ".bin";
-    const storedName = `${randomBytes(16).toString("hex")}${ext}`;
-    await uploadFile(KYC_BUCKET, storedName, Buffer.from(await file.arrayBuffer()), file.type);
+  for (const { side, file, storedName } of stored) {
     await db.kycDocument.create({
       data: {
         userId: user.id,

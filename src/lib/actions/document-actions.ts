@@ -48,6 +48,21 @@ export async function uploadApplicationDocumentAction(
   if (file.size > MAX_UPLOAD_BYTES) return { error: t.errors.fileTooBig };
   if (!ALLOWED_MIME.includes(file.type)) return { error: t.errors.fileType };
 
+  // Store the replacement BEFORE discarding the version already on file, so a
+  // failed upload can't leave the applicant with nothing and no explanation.
+  const ext = path.extname(file.name).toLowerCase() || ".bin";
+  const storedName = `${randomBytes(16).toString("hex")}${ext}`;
+  try {
+    await uploadFile(
+      APPLICATION_BUCKET,
+      storedName,
+      Buffer.from(await file.arrayBuffer()),
+      file.type
+    );
+  } catch {
+    return { error: t.errors.uploadFailed };
+  }
+
   // Re-uploading replaces the previous version rather than stacking copies.
   const previous = await db.applicationDocument.findMany({
     where: { applicationId: app.id, docKey },
@@ -56,15 +71,6 @@ export async function uploadApplicationDocumentAction(
     await deleteFiles(APPLICATION_BUCKET, previous.map((d) => d.storedName)).catch(() => {});
     await db.applicationDocument.deleteMany({ where: { id: { in: previous.map((d) => d.id) } } });
   }
-
-  const ext = path.extname(file.name).toLowerCase() || ".bin";
-  const storedName = `${randomBytes(16).toString("hex")}${ext}`;
-  await uploadFile(
-    APPLICATION_BUCKET,
-    storedName,
-    Buffer.from(await file.arrayBuffer()),
-    file.type
-  );
 
   await db.applicationDocument.create({
     data: {

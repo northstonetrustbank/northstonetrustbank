@@ -57,8 +57,11 @@ as info@, support@ or accountmanager@ from `/admin/messages`; the app
 authenticates to SMTP as whichever mailbox is sending, because Spacemail rejects
 sending "as" an address you are not signed in as.
 
-New live-chat threads and contact-form messages are announced to
-**info@northstonetrustbank.com** (`CHAT_NOTIFY_EMAIL`).
+New live-chat threads are announced to **info@northstonetrustbank.com**, which
+`CHAT_NOTIFY_EMAIL` overrides. The contact form is separate: it routes by topic in
+`src/lib/actions/contact-actions.ts` — general enquiries to info@, account, deposit
+and complaint enquiries to support@, and applications to accountmanager@ — with the
+sender set as reply-to so replying from the admin inbox reaches them.
 
 `/admin/inbox` reads those mailboxes over IMAP so staff can read and reply
 without leaving the portal.

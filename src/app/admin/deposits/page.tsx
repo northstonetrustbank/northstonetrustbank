@@ -21,8 +21,8 @@ export default async function DepositsQueuePage() {
         lead="Clients telling you they have sent money to the bank."
         steps={[
           "Check your real bank account first and confirm the money actually arrived.",
-          "Only then press Approve — that is what adds the money to their balance.",
-          "They get a receipt showing their new balance. If it never arrived, decline it.",
+          "Only then press Approve & add the money — that is what raises their balance.",
+          "If it never arrived, press Reject and say why. If you cannot match it to a payment, press Request proof and they will be asked for a receipt.",
         ]}
       />
 
@@ -76,7 +76,7 @@ export default async function DepositsQueuePage() {
                 <form action={verifyDepositAction}>
                   <input type="hidden" name="txId" value={tx.id} />
                   <button className="rounded-md bg-green-700 px-5 py-2 text-sm font-bold text-white hover:bg-green-600">
-                    Verify &amp; credit
+                    Approve &amp; add the money
                   </button>
                 </form>
                 {!tx.proofRequestedAt && (

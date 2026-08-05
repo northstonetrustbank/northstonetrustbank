@@ -47,8 +47,9 @@ export default function EConsentPage() {
 
       <LegalH2>5. Automated senders</LegalH2>
       <LegalP>
-        Automated messages are sent from info@northstonetrustbank.com. For help,
-        always use support@northstonetrustbank.com.
+        Automated messages are sent from noreply@northstonetrustbank.com. Replies to
+        that address are not monitored — for help, always use
+        support@northstonetrustbank.com.
       </LegalP>
     </LegalShell>
   );

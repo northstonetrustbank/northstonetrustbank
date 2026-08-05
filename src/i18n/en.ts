@@ -1046,6 +1046,8 @@ export const en = {
     needFile: "Please upload your document.",
     fileTooBig: "That file is too large. Photograph the document instead — we shrink photos for you.",
     fileType: "The document must be a JPG, PNG, WEBP, or PDF file.",
+    uploadFailed:
+      "We couldn't save your files just now, so nothing was changed. Please try again in a moment — if it keeps happening, email support@northstonetrustbank.com.",
     firstNameRequired: "First name is required",
     lastNameRequired: "Last name is required",
     emailInvalid: "Enter a valid email address",

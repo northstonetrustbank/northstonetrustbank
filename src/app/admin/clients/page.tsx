@@ -136,8 +136,8 @@ export default async function ClientsPage() {
                         name="direction"
                         className="mt-1 block rounded-md border border-gray-300 bg-white px-2 py-2 text-sm"
                       >
-                        <option value="CREDIT">Credit (interest/bonus)</option>
-                        <option value="DEBIT">Debit (withdrawal/fee)</option>
+                        <option value="CREDIT">Add money (interest or bonus)</option>
+                        <option value="DEBIT">Take money out (fee or payout)</option>
                       </select>
                     </label>
                     <label className="block text-xs font-semibold text-gray-600">

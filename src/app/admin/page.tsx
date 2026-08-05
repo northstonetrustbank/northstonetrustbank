@@ -27,8 +27,7 @@ export default async function AdminHomePage() {
     applications,
     chats,
     activeClients,
-    postedCredits,
-    postedDebits,
+    postedByCurrency,
   ] = await Promise.all([
     db.user.count({ where: { status: "PENDING", role: "CLIENT" } }),
     db.transaction.count({ where: { status: "PENDING", type: "DEPOSIT" } }),
@@ -36,18 +35,22 @@ export default async function AdminHomePage() {
     db.productApplication.count({ where: { status: "SUBMITTED" } }),
     db.chatConversation.count({ where: { unreadForAdmin: true } }),
     db.user.count({ where: { status: "ACTIVE", role: "CLIENT" } }),
-    db.transaction.aggregate({
-      _sum: { amountCents: true },
-      where: { status: "POSTED", amountCents: { gt: 0 } },
-    }),
-    db.transaction.aggregate({
-      _sum: { amountCents: true },
-      where: { status: "POSTED", amountCents: { lt: 0 } },
+    // Accounts can be held in USD or EUR. Summing the two and printing one
+    // currency symbol would make the bank's headline figure meaningless, so the
+    // ledger is totalled per currency.
+    db.transaction.findMany({
+      where: { status: "POSTED" },
+      select: { amountCents: true, account: { select: { currency: true } } },
     }),
   ]);
 
-  const heldCents =
-    (postedCredits._sum.amountCents ?? 0) + (postedDebits._sum.amountCents ?? 0);
+  const heldByCurrency = new Map<string, number>();
+  for (const tx of postedByCurrency) {
+    const currency = tx.account.currency;
+    heldByCurrency.set(currency, (heldByCurrency.get(currency) ?? 0) + tx.amountCents);
+  }
+  // Always show something, even before the first transaction exists.
+  const held = heldByCurrency.size > 0 ? [...heldByCurrency.entries()] : [["USD", 0] as const];
 
   const jobs: Job[] = [
     {
@@ -122,7 +125,13 @@ export default async function AdminHomePage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
             Total held across all client accounts
           </p>
-          <p className="mt-1 text-3xl font-bold text-navy-900">{formatMoney(heldCents)}</p>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-5 gap-y-1">
+            {held.map(([currency, cents]) => (
+              <p key={currency} className="text-3xl font-bold text-navy-900">
+                {formatMoney(cents, "en", currency)}
+              </p>
+            ))}
+          </div>
         </div>
       </div>
 

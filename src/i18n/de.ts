@@ -1048,6 +1048,8 @@ export const de: Dict = {
     needFile: "Bitte laden Sie Ihr Dokument hoch.",
     fileTooBig: "Diese Datei ist zu groß. Fotografieren Sie das Dokument stattdessen — Fotos verkleinern wir für Sie.",
     fileType: "Das Dokument muss eine JPG-, PNG-, WEBP- oder PDF-Datei sein.",
+    uploadFailed:
+      "Wir konnten Ihre Dateien gerade nicht speichern, es wurde daher nichts geändert. Bitte versuchen Sie es gleich noch einmal — wenn das Problem bestehen bleibt, schreiben Sie an support@northstonetrustbank.com.",
     firstNameRequired: "Vorname ist erforderlich",
     lastNameRequired: "Nachname ist erforderlich",
     emailInvalid: "Geben Sie eine gültige E-Mail-Adresse ein",

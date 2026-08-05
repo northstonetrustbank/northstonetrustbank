@@ -56,7 +56,12 @@ export async function submitDepositAction(
     }
     const ext = path.extname(file.name).toLowerCase() || ".bin";
     const storedName = `${randomBytes(16).toString("hex")}${ext}`;
-    await uploadFile(DEPOSIT_BUCKET, storedName, Buffer.from(await file.arrayBuffer()), file.type);
+    try {
+      await uploadFile(DEPOSIT_BUCKET, storedName, Buffer.from(await file.arrayBuffer()), file.type);
+    } catch {
+      // Without this the deposit is silently dropped and the form just resets.
+      return { error: t.errors.uploadFailed };
+    }
     proof = { fileName: file.name, storedName, mimeType: file.type };
   }
 

@@ -36,6 +36,6 @@ You may withdraw consent to electronic delivery by contacting
 whether the account can continue without electronic delivery, and any timing.]**
 
 ## 6. Automated senders
-Automated messages are sent from **info@northstonetrustbank.com**. Replies to
-automated messages may not be monitored; for help, always use
+Automated messages are sent from **noreply@northstonetrustbank.com**. Replies to
+automated messages are not monitored; for help, always use
 **support@northstonetrustbank.com**.

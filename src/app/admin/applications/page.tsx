@@ -46,8 +46,9 @@ export default async function ApplicationsPage() {
         lead="Clients asking for a credit card, loan, mortgage or other product."
         steps={[
           "Open a request and read what they asked for and the details they gave.",
-          "Decide the amount and the rate, then approve — or decline and say why.",
+          "Decide how much to approve them for, then approve — or decline and say why.",
           "They get an email with your decision. An approved card gets its card number straight away.",
+          "Set the interest rate and next payment date afterwards, in the Approved products section further down this page.",
         ]}
       />
 
