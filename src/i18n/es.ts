@@ -1011,6 +1011,13 @@ export const es: Dict = {
     you: "Tú",
     waiting: "Enviado — un especialista lo está viendo",
     empty: "Salúdanos y seguimos desde ahí.",
+    today: "Hoy",
+    yesterday: "Ayer",
+    greetingTitle: "Hola 👋",
+    greetingBody: "¿Dudas sobre una cuenta? Escríbenos: te responde una persona.",
+    dismiss: "Cerrar",
+    close: "Cerrar el chat",
+    securityNote: "Nunca le pediremos su contraseña ni el número completo de su tarjeta.",
   },
   support: {
     title: "Soporte en directo",

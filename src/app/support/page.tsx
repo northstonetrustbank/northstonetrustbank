@@ -56,6 +56,8 @@ export default async function SupportPage() {
               send: t.chat.send,
               waiting: t.support.waiting,
               empty: t.support.empty,
+              today: t.chat.today,
+              yesterday: t.chat.yesterday,
               online: t.chat.online,
               signedInAs: t.support.signedInAs,
               startTitle: t.support.startTitle,

@@ -1009,6 +1009,13 @@ export const en = {
     you: "You",
     waiting: "Sent — a specialist is picking this up",
     empty: "Say hello and we'll take it from there.",
+    today: "Today",
+    yesterday: "Yesterday",
+    greetingTitle: "Hi there 👋",
+    greetingBody: "Questions about an account? Ask here — a real person answers.",
+    dismiss: "Dismiss",
+    close: "Close chat",
+    securityNote: "We never ask for your password or full card number.",
   },
   support: {
     title: "Live support",

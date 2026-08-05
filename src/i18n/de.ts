@@ -1011,6 +1011,13 @@ export const de: Dict = {
     you: "Sie",
     waiting: "Gesendet — ein Mitarbeiter übernimmt",
     empty: "Sagen Sie Hallo, den Rest übernehmen wir.",
+    today: "Heute",
+    yesterday: "Gestern",
+    greetingTitle: "Hallo 👋",
+    greetingBody: "Fragen zu einem Konto? Schreiben Sie uns — ein Mensch antwortet.",
+    dismiss: "Schließen",
+    close: "Chat schließen",
+    securityNote: "Wir fragen niemals nach Ihrem Passwort oder Ihrer vollständigen Kartennummer.",
   },
   support: {
     title: "Live-Support",
