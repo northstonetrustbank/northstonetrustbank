@@ -58,14 +58,21 @@ export function Logo({
   const nameColor = theme === "dark" ? "text-white" : "text-navy-900";
   const subColor = theme === "dark" ? "text-accent-100" : "text-accent-500";
 
+  // Sizes step down on narrow phones. The signed-in header also carries a
+  // language switcher and a sign-out button, and at 320px the three together
+  // pushed the page wider than the screen, so it panned sideways under a thumb.
   const content = (
-    <span className="flex items-center gap-2.5">
-      <LogoMark className="h-9 w-[30px] shrink-0" theme={theme} />
-      <span className="leading-tight">
-        <span className={`block text-[15px] font-bold tracking-[0.08em] ${nameColor}`}>
+    <span className="flex min-w-0 items-center gap-2 sm:gap-2.5">
+      <LogoMark className="h-8 w-[26px] shrink-0 sm:h-9 sm:w-[30px]" theme={theme} />
+      <span className="min-w-0 leading-tight">
+        <span
+          className={`block text-[13px] font-bold tracking-[0.06em] sm:text-[15px] sm:tracking-[0.08em] ${nameColor}`}
+        >
           NORTHSTONE
         </span>
-        <span className={`block text-[9px] font-semibold uppercase tracking-[0.28em] ${subColor}`}>
+        <span
+          className={`block text-[8px] font-semibold uppercase tracking-[0.2em] sm:text-[9px] sm:tracking-[0.28em] ${subColor}`}
+        >
           {subtitle ?? "Trust Bank"}
         </span>
       </span>

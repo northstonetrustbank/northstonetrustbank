@@ -294,12 +294,22 @@ export function ChatWidget({
             </button>
           )}
 
-          <button
-            onClick={() => (open ? setOpen(false) : openPanel())}
-            aria-label={labels.open}
-            aria-expanded={open}
-            className="relative flex h-14 w-14 items-center justify-center rounded-full bg-accent-500 text-white shadow-xl shadow-accent-700/35 transition hover:bg-accent-600 hover:shadow-2xl active:scale-95"
-          >
+          <span className="relative flex shrink-0">
+            {/* a slow breathing ring, so the button reads as a live channel */}
+            {!open && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-full bg-accent-500/45 motion-safe:animate-[nsPulseRing_2.8s_ease-out_infinite]"
+              />
+            )}
+            <button
+              onClick={() => (open ? setOpen(false) : openPanel())}
+              aria-label={labels.open}
+              aria-expanded={open}
+              className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-accent-500 text-white shadow-xl shadow-accent-700/35 transition hover:bg-accent-600 hover:shadow-2xl active:scale-95 ${
+                open ? "" : "motion-safe:animate-[nsFloat_3.6s_ease-in-out_infinite]"
+              }`}
+            >
             <span className={`absolute transition-all duration-200 ${open ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"}`}>
               <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
@@ -310,12 +320,20 @@ export function ChatWidget({
                 <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 20l1.1-3.4A8.5 8.5 0 1 1 21 11.5z" />
               </svg>
             </span>
-            {!open && unread > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white ring-2 ring-white">
-                {unread}
-              </span>
-            )}
-          </button>
+              {/* an agent-online dot, the way a staffed channel signals itself */}
+              {!open && unread === 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-px -right-px h-3.5 w-3.5 rounded-full bg-emerald-400 ring-2 ring-white"
+                />
+              )}
+              {!open && unread > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[11px] font-bold text-white ring-2 ring-white">
+                  {unread}
+                </span>
+              )}
+            </button>
+          </span>
         </div>
       </div>
     </>

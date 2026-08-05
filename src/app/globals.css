@@ -35,6 +35,43 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* A belt-and-braces guard against sideways panning on phones. One element a
+   few pixels too wide is enough to make the whole page slide under a thumb,
+   which reads as the site being broken. Anything that genuinely needs to
+   scroll horizontally (wide tables, the ledger) does so inside its own
+   overflow-x container, so nothing legitimate is lost here. */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Live-chat launcher. A support button that never moves reads as decoration,
+   so the ring breathes outward on a slow cycle and the button drifts a couple
+   of pixels — enough to catch the eye without behaving like an advert. Both are
+   applied with motion-safe, so anyone who asks for reduced motion gets neither. */
+@keyframes nsPulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+@keyframes nsFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
 /* Chat panel opening — kept here so the widget can reference it by name. */
 @keyframes chatIn {
   from {

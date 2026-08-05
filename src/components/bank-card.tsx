@@ -124,9 +124,15 @@ export function BankCard({
   const face = FACES[theme] ?? FACES.BLUE;
 
   return (
+    // A real card's details are proportional to the card, and this one has a
+    // fixed aspect ratio — so sizing the contents in pixels meant that once the
+    // card got narrow (a tier picker, a two-up grid) the height shrank while the
+    // text did not, and the bottom row was clipped by overflow-hidden. Everything
+    // inside is now expressed in cqw — percentages of the card's own width — so
+    // the face is identical at any size.
     <div
-      className={`relative aspect-[1.586/1] w-full overflow-hidden rounded-2xl p-5 shadow-lg shadow-navy-900/20 ${className}`}
-      style={{ background: face.background }}
+      className={`relative aspect-[1.586/1] w-full overflow-hidden rounded-2xl shadow-lg shadow-navy-900/20 ${className}`}
+      style={{ background: face.background, containerType: "inline-size", padding: "7.3cqw" }}
     >
       {/* decorative arcs */}
       <div
@@ -147,35 +153,35 @@ export function BankCard({
       />
 
       <div className="relative flex h-full flex-col justify-between">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between" style={{ gap: "4.4cqw" }}>
           <div>
             <p
-              className="text-[13px] font-semibold uppercase tracking-[0.2em]"
-              style={{ color: face.ink }}
+              className="font-semibold uppercase tracking-[0.2em]"
+              style={{ color: face.ink, fontSize: "4.8cqw", lineHeight: 1.15 }}
             >
               Northstone
             </p>
             <p
-              className="mt-0.5 text-[8px] font-medium uppercase tracking-[0.32em]"
-              style={{ color: face.inkSoft }}
+              className="font-medium uppercase tracking-[0.32em]"
+              style={{ color: face.inkSoft, fontSize: "2.9cqw", lineHeight: 1.3, marginTop: "0.5cqw" }}
             >
               Trust Bank
             </p>
           </div>
           {badge && (
             <span
-              className="text-[10px] font-semibold uppercase tracking-[0.2em]"
-              style={{ color: face.ink }}
+              className="font-semibold uppercase tracking-[0.2em]"
+              style={{ color: face.ink, fontSize: "3.7cqw", lineHeight: 1.2 }}
             >
               {badge}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center" style={{ gap: "4.4cqw" }}>
           {/* chip — flat gold reads as plastic, so it gets a lit top half,
               a shaded lower half and proper contact pads */}
-          <svg width="38" height="29" viewBox="0 0 38 29" aria-hidden="true">
+          <svg style={{ width: "14cqw", height: "10.7cqw" }} viewBox="0 0 38 29" aria-hidden="true">
             <rect width="38" height="29" rx="5" fill={face.chip} />
             <path d="M0 14.5 H38 V24 a5 5 0 0 1 -5 5 H5 a5 5 0 0 1 -5 -5 Z" fill="#000" opacity="0.14" />
             <rect x="0.5" y="0.5" width="37" height="28" rx="4.5" fill="none" stroke="#FFF" strokeOpacity="0.5" />
@@ -187,7 +193,7 @@ export function BankCard({
             </g>
           </svg>
           {/* contactless */}
-          <svg width="18" height="22" viewBox="0 0 18 22" aria-hidden="true">
+          <svg style={{ width: "6.6cqw", height: "8.1cqw" }} viewBox="0 0 18 22" aria-hidden="true">
             <path
               d="M3 7 a9 9 0 0 1 0 8 M8 4 a14 14 0 0 1 0 14"
               fill="none"
@@ -199,32 +205,38 @@ export function BankCard({
         </div>
 
         <p
-          className="min-h-[1.4em] font-mono text-[15px] tracking-[0.1em] sm:text-[17px]"
-          style={{ color: face.ink }}
+          className="font-mono tracking-[0.1em]"
+          style={{ color: face.ink, fontSize: "5.6cqw", lineHeight: 1.25, minHeight: "1.25em" }}
         >
           {placeholder ? "••••  ••••  ••••  ••••" : formatCardNumber(number, masked)}
         </p>
 
-        <div className="flex items-end justify-between gap-3">
+        <div className="flex items-end justify-between" style={{ gap: "4.4cqw" }}>
           <div className="min-w-0">
             <p
-              className="truncate text-[10px] font-semibold uppercase tracking-[0.16em]"
-              style={{ color: face.ink }}
+              className="truncate font-semibold uppercase tracking-[0.16em]"
+              style={{ color: face.ink, fontSize: "3.7cqw", lineHeight: 1.25 }}
             >
               {holder || holderPlaceholder}
             </p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-[0.16em]" style={{ color: face.inkSoft }}>
+            <p
+              className="truncate uppercase tracking-[0.16em]"
+              style={{ color: face.inkSoft, fontSize: "3.3cqw", lineHeight: 1.3, marginTop: "0.5cqw" }}
+            >
               {expiry ? `Valid thru ${expiry}` : productName}
             </p>
           </div>
           {value ? (
             <div className="shrink-0 text-right">
               {valueLabel && (
-                <p className="text-[8px] uppercase tracking-[0.16em]" style={{ color: face.inkSoft }}>
+                <p
+                  className="uppercase tracking-[0.16em]"
+                  style={{ color: face.inkSoft, fontSize: "2.9cqw", lineHeight: 1.3 }}
+                >
                   {valueLabel}
                 </p>
               )}
-              <p className="text-sm font-semibold" style={{ color: face.ink }}>
+              <p className="font-semibold" style={{ color: face.ink, fontSize: "5.1cqw", lineHeight: 1.25 }}>
                 {value}
               </p>
             </div>
@@ -234,7 +246,8 @@ export function BankCard({
 
       {status && (
         <span
-          className={`absolute right-4 top-1/2 -translate-y-1/2 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${STATUS_TONES[status.tone]}`}
+          className={`absolute top-1/2 -translate-y-1/2 rounded-full font-bold uppercase tracking-wide ${STATUS_TONES[status.tone]}`}
+          style={{ right: "5.5cqw", fontSize: "3.4cqw", padding: "1.2cqw 3cqw", lineHeight: 1.2 }}
         >
           {status.label}
         </span>
