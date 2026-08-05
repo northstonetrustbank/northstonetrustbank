@@ -43,7 +43,10 @@ body {
 html,
 body {
   max-width: 100%;
-  overflow-x: hidden;
+  /* clip rather than hidden: hidden turns the element into a scroll container,
+     which breaks position:sticky and smooth scrolling. clip stops the sideways
+     drift without either side effect. */
+  overflow-x: clip;
 }
 
 /* Live-chat launcher. A support button that never moves reads as decoration,

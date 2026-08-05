@@ -132,7 +132,7 @@ export function BankCard({
     // the face is identical at any size.
     <div
       className={`relative aspect-[1.586/1] w-full overflow-hidden rounded-2xl shadow-lg shadow-navy-900/20 ${className}`}
-      style={{ background: face.background, containerType: "inline-size", padding: "7.3cqw" }}
+      style={{ background: face.background, containerType: "inline-size" }}
     >
       {/* decorative arcs */}
       <div
@@ -152,7 +152,15 @@ export function BankCard({
         style={{ boxShadow: face.edge }}
       />
 
-      <div className="relative flex h-full flex-col justify-between">
+      {/* The padding lives here, not on the card. An element that declares
+          container-type cannot resolve its OWN cqw units — those fall back to the
+          viewport — so padding set on the card came out identical (and far too
+          large) at every card size, squeezing the cardholder name out of view.
+          This div is a child of the container, so its cqw resolves correctly. */}
+      <div
+        className="relative flex h-full flex-col justify-between"
+        style={{ padding: "7.3cqw" }}
+      >
         <div className="flex items-start justify-between" style={{ gap: "4.4cqw" }}>
           <div>
             <p
