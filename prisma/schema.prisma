@@ -1,0 +1,291 @@
+// Northstone Trust Bank — Phase 1 schema
+// SQLite for local dev; switches to PostgreSQL (Supabase) at deploy time.
+// SQLite has no native enums, so enum-like fields are strings with the
+// allowed values noted in comments and enforced in application code.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String
+  role         String  @default("CLIENT") // CLIENT | ADMIN | SUPER_ADMIN
+  accountType  String  @default("PERSONAL") // PERSONAL | COMMERCIAL
+  status       String  @default("PENDING") // PENDING | ACTIVE | BLOCKED | REJECTED
+  statusReason String? // shown to admins; set on reject/block
+  emailVerified Boolean @default(false)
+  locale       String  @default("en") // en | fr | de | es — used for emails too
+  currency     String  @default("USD") // USD | EUR — the client's account currency
+  securityWordHash String? // hashed; required to confirm sensitive actions
+  // Two-factor authentication is opt-in per client. When on, signing in needs
+  // a one-time code emailed to the address on the account.
+  twoFactorEnabled Boolean   @default(false)
+  twoFactorEnabledAt DateTime?
+  // Set when an admin purges the applicant's identity images after review.
+  // The audit log keeps a permanent record of what was held and removed.
+  kycDocsDeletedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  kycDocuments  KycDocument[]
+  tokens        VerificationToken[]
+  auditActions  AuditLog[]          @relation("actor")
+  accounts      Account[]
+  notifications Notification[]
+  applications  ProductApplication[]
+  savingsGoals  SavingsGoal[]
+  chats         ChatConversation[]
+}
+
+// Live chat: one conversation per visitor, with a thread of messages.
+model ChatConversation {
+  id             String   @id @default(cuid())
+  visitorToken   String   @unique // ties an anonymous browser to its thread
+  // Set when a signed-in client starts a conversation, so support can see who
+  // they are instead of treating them as an anonymous visitor.
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name           String
+  phone          String?
+  email          String?
+  cardLast4      String?
+  status         String   @default("OPEN") // OPEN | CLOSED
+  unreadForAdmin Boolean  @default(false)
+  lastNotifiedAt DateTime? // debounces the email alert to the support inbox
+  createdAt      DateTime @default(now())
+  lastMessageAt  DateTime @default(now())
+
+  messages ChatMessage[]
+
+  @@index([status, lastMessageAt])
+}
+
+model ChatMessage {
+  id             String   @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         String // VISITOR | ADMIN
+  body           String
+  createdAt      DateTime @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// A named savings bucket ("Save for a trip"). Money is set aside from checking.
+model SavingsGoal {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  targetCents  Int? // optional goal target
+  currentCents Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Applying for a product (card, loan, mortgage, insurance, business products).
+// Approval records the terms and marks it active for the client.
+model ProductApplication {
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productKey         String // CREDIT_CARD, PERSONAL_LOAN, MORTGAGE, ...
+  status             String    @default("SUBMITTED") // SUBMITTED | APPROVED | DECLINED
+  amountCents        Int? // requested amount (loans/mortgage) — cards use tiers
+  termMonths         Int?
+  purpose            String?
+  // Answers to the product's application questions (employment, income,
+  // property details…). Shape is driven by FieldDef in src/lib/products.ts.
+  details            Json?
+  approvedAmountCents Int? // approved limit/amount
+  cardTier           String? // GOLD | PLATINUM | BLACK (cards) — as approved
+  requestedTier      String? // tier the client asked for on the application
+  adminNote          String?
+  decidedBy          String?
+  decidedAt          DateTime?
+  // Post-approval details, maintained manually by admin:
+  interestRate       String? // e.g. "19.99% APR"
+  dueDate            DateTime? // next payment due
+  outstandingCents   Int? // current balance / accrued interest
+  frozen             Boolean   @default(false) // cards: client or admin freeze
+  // Card face details, issued by an admin. DISPLAY ONLY — these are not real
+  // card-network credentials and cannot be used to spend anywhere.
+  cardNumber         String? // 16 digits, no spaces
+  cardExpiry         String? // "MM/YY"
+  cardCvv            String? // 3 digits
+  cardHolder         String? // name embossed on the card
+  cardIssuedAt       DateTime?
+  // Supporting paperwork. docsRequestedAt is set when an admin asks for
+  // something extra, with docsNote explaining what.
+  docsRequestedAt    DateTime?
+  docsNote           String?
+  createdAt          DateTime  @default(now())
+
+  transactions Transaction[]
+  documents    ApplicationDocument[]
+
+  @@index([userId, status])
+}
+
+// A supporting document attached to an application — proof of income, a title
+// deed, a valuation. Kept separate from KycDocument because these belong to a
+// product application rather than to identity verification, and they are
+// deleted on their own schedule once a decision is made.
+model ApplicationDocument {
+  id            String             @id @default(cuid())
+  applicationId String
+  application   ProductApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  docKey        String // GOVERNMENT_ID | PROOF_OF_INCOME | TITLE_DEED | ...
+  fileName      String // original name as uploaded
+  storedName    String // randomized name in the bucket
+  mimeType      String
+  sizeBytes     Int
+  uploadedAt    DateTime           @default(now())
+
+  @@index([applicationId])
+}
+
+// Admin-configured ways to move money in and out. Each carries a route (where
+// clients send deposits) and per-account-type visibility.
+model DepositMethod {
+  id                String   @id @default(cuid())
+  key               String   @unique // BANK, ZELLE, CASHAPP, PAYPAL, ...
+  label             String
+  enabled           Boolean  @default(true)
+  accountTypes      String   @default("ALL") // ALL | PERSONAL | COMMERCIAL
+  forDeposit        Boolean  @default(true)
+  forWithdrawal     Boolean  @default(true)
+  routeName         String? // deposit destination shown to clients (our details)
+  routeIdentifier   String? // account number / tag / wallet address
+  routeInstitution  String?
+  routeInstructions String?
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+}
+
+// In-app notification, one row per recipient. Admin broadcasts create many.
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  readAt    DateTime? // null = unread
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  number    String   @unique // e.g. NS-48291023
+  kind      String   @default("CHECKING") // CHECKING | SAVINGS
+  currency  String   @default("USD")
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+
+  @@index([userId, kind])
+}
+
+// Append-only ledger. A row is never edited after it is POSTED or REJECTED;
+// the balance is always the sum of POSTED amounts.
+model Transaction {
+  id        String  @id @default(cuid())
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  // Ties a ledger row to the product it belongs to (card draw, loan payment…)
+  // so each product page can show its own transaction history.
+  applicationId String?
+  application   ProductApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+
+  type        String // DEPOSIT | WITHDRAWAL | ADJUSTMENT
+  status      String @default("PENDING") // PENDING | POSTED | REJECTED
+  amountCents Int // credits positive, debits negative
+  reference   String  @unique // receipt number shown to the client
+  note        String?
+  methodKey    String? // which deposit/withdrawal method was used
+  counterparty String? // withdrawals: client's payout details (name/number/etc.)
+
+  // proof uploaded by the client (transfer confirmation / receipt)
+  proofFileName   String?
+  proofStoredName String?
+  proofMimeType   String?
+
+  rejectReason     String?
+  reviewedBy       String? // admin email that verified/rejected
+  proofRequestedAt DateTime? // set when admin asks the client for proof
+
+  createdAt DateTime  @default(now())
+  postedAt  DateTime?
+
+  @@index([applicationId, createdAt])
+}
+
+model KycDocument {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  docType    String // GOVERNMENT_ID | DRIVERS_LICENSE | PASSPORT
+  // Which image this is: the document's front, its back, or the applicant
+  // holding it. Rows created before this field existed are fronts.
+  side       String   @default("FRONT") // FRONT | BACK | SELFIE
+  fileName   String // original name as uploaded
+  storedName String // randomized name in the bucket
+  mimeType   String
+  sizeBytes  Int
+  uploadedAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  purpose   String // EMAIL_VERIFY | PASSWORD_RESET
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// Append-only. Rows are never updated or deleted.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String? // null for system-generated events
+  actor      User?    @relation("actor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorLabel String // email or "system" — survives even if actor is deleted
+  action     String // e.g. USER_SIGNUP, ACCOUNT_APPROVED, ACCOUNT_BLOCKED
+  targetType String? // e.g. USER
+  targetId   String?
+  details    String? // human-readable context
+  createdAt  DateTime @default(now())
+}
+
+// Record of every email the system sends (or would send in dev mode).
+model EmailLog {
+  id        String   @id @default(cuid())
+  toAddress String
+  fromAddress String
+  subject   String
+  status    String // SENT | DEV_LOGGED | FAILED
+  error     String?
+  createdAt DateTime @default(now())
+}

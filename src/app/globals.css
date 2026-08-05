@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  /* Brand navy — sampled from the Northstone mark (#04162c deep, #013378 mid) */
+  --color-navy-50: #eff5fc;
+  --color-navy-100: #dce9f8;
+  --color-navy-200: #bad3f0;
+  --color-navy-300: #8bb4e4;
+  --color-navy-400: #548fd4;
+  --color-navy-500: #2a6cc0;
+  --color-navy-600: #1550a1;
+  --color-navy-700: #013378;
+  --color-navy-800: #062a52;
+  --color-navy-900: #04162c;
+  --color-navy-950: #020d1c;
+
+  /* Action blue — the bright face of the mark (#046bd4) */
+  --color-accent-50: #eaf3fe;
+  --color-accent-100: #d3e6fd;
+  --color-accent-500: #046bd4;
+  --color-accent-600: #0357ae;
+  --color-accent-700: #04478c;
+
+  --font-sans: var(--font-inter);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #ffffff;
+  color: #101828;
+  font-feature-settings: "cv02", "cv03", "cv04";
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Chat panel opening — kept here so the widget can reference it by name. */
+@keyframes chatIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
