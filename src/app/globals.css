@@ -47,6 +47,26 @@ body {
      which breaks position:sticky and smooth scrolling. clip stops the sideways
      drift without either side effect. */
   overflow-x: clip;
+  /* and no horizontal rubber-banding at the edges */
+  overscroll-behavior-x: none;
+}
+
+/* A page should travel up and down under a thumb, never side to side. The rules
+   above remove horizontal *overflow*, but a stray gesture can still drag the
+   page sideways on a phone. This tells the browser that touches here pan
+   vertically only — pinch-to-zoom is deliberately kept, since people do zoom in
+   on figures and card numbers. */
+body {
+  touch-action: pan-y pinch-zoom;
+}
+
+/* The exception: anything that genuinely scrolls sideways — the ledger on a
+   narrow screen — gets its gestures back, or it would be unreadable. */
+.overflow-x-auto,
+.overflow-x-scroll,
+.overflow-auto,
+.overflow-scroll {
+  touch-action: auto;
 }
 
 /* Live-chat launcher. A support button that never moves reads as decoration,
@@ -62,16 +82,6 @@ body {
   100% {
     transform: scale(1.65);
     opacity: 0;
-  }
-}
-
-@keyframes nsFloat {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
   }
 }
 
