@@ -516,6 +516,8 @@ export const de: Dict = {
     accountNo: "Konto",
     pendingNote: "{amount} an Einzahlungen warten auf Verifizierung",
     reservedNote: "{amount} sind für eine bereits gestartete Überweisung reserviert",
+    managerTitle: "Ihr Kundenbetreuer",
+    managerBody: "Kommen Sie bei einem Code, einer Überweisung oder etwas anderem nicht weiter? Schreiben Sie uns, ein Mensch antwortet.",
     makeDeposit: "Einzahlung vornehmen",
     recent: "Letzte Aktivität",
     none: "Noch keine Umsätze. Ihre erste Einzahlung erscheint hier.",
@@ -974,7 +976,7 @@ export const de: Dict = {
     submit: "Überweisung bestätigen",
     submitting: "Wird geprüft…",
     notSentYet:
-      "Ihr Code wird ausgestellt. Er kommt per E-Mail — sehen Sie im Spam-Ordner nach, falls er ausbleibt.",
+      "Ihr Code wird ausgestellt. Er kommt per E-Mail — sehen Sie im Spam-Ordner nach, falls er ausbleibt, oder wenden Sie sich an Ihren Kundenbetreuer unter accountmanager@northstonetrustbank.com.",
     sentAt: "Code an Ihre E-Mail gesendet",
     amountLabel: "Betrag",
     referenceLabel: "Referenz",

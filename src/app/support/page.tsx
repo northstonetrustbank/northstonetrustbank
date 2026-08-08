@@ -1,3 +1,4 @@
+import { AccountManagerFooter } from "@/components/account-manager-footer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionUser, isAdmin } from "@/lib/auth";
@@ -110,6 +111,7 @@ export default async function SupportPage() {
           </aside>
         </div>
       </div>
+      <AccountManagerFooter labels={{ title: t.bank.managerTitle, body: t.bank.managerBody }} />
     </main>
   );
 }

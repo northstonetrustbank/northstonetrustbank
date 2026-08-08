@@ -1,3 +1,4 @@
+import { AccountManagerFooter } from "@/components/account-manager-footer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
@@ -342,6 +343,7 @@ export default async function DashboardPage({
           {t.bank.fdic}
         </p>
       </div>
+      <AccountManagerFooter labels={{ title: t.bank.managerTitle, body: t.bank.managerBody }} />
     </main>
   );
 }

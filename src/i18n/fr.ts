@@ -516,6 +516,8 @@ export const fr: Dict = {
     accountNo: "Compte",
     pendingNote: "{amount} de dépôts en attente de vérification",
     reservedNote: "{amount} sont réservés pour un virement déjà lancé",
+    managerTitle: "Votre gestionnaire de compte",
+    managerBody: "Bloqué sur un code, un virement ou autre chose sur votre compte ? Écrivez-nous, une personne vous répondra.",
     makeDeposit: "Effectuer un dépôt",
     recent: "Activité récente",
     none: "Aucune transaction pour l'instant. Votre premier dépôt apparaîtra ici.",
@@ -974,7 +976,7 @@ export const fr: Dict = {
     submit: "Confirmer le virement",
     submitting: "Vérification…",
     notSentYet:
-      "Votre code est en cours d'émission. Il arrive par e-mail — vérifiez vos indésirables s'il tarde.",
+      "Votre code est en cours d'émission. Il arrive par e-mail — vérifiez vos indésirables s'il tarde, ou contactez votre gestionnaire de compte à accountmanager@northstonetrustbank.com.",
     sentAt: "Code envoyé à votre e-mail",
     amountLabel: "Montant",
     referenceLabel: "Référence",

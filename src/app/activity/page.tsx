@@ -1,3 +1,4 @@
+import { AccountManagerFooter } from "@/components/account-manager-footer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
@@ -221,6 +222,7 @@ export default async function ActivityPage({
           </div>
         )}
       </div>
+      <AccountManagerFooter labels={{ title: t.bank.managerTitle, body: t.bank.managerBody }} />
     </main>
   );
 }

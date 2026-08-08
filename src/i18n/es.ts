@@ -516,6 +516,8 @@ export const es: Dict = {
     accountNo: "Cuenta",
     pendingNote: "{amount} en depósitos pendientes de verificación",
     reservedNote: "{amount} están reservados para una transferencia ya iniciada",
+    managerTitle: "Tu gestor de cuenta",
+    managerBody: "¿Atascado con un código, una transferencia o cualquier otra cosa de tu cuenta? Escríbenos y te responderá una persona.",
     makeDeposit: "Hacer un depósito",
     recent: "Actividad reciente",
     none: "Aún no hay transacciones. Su primer depósito aparecerá aquí.",
@@ -974,7 +976,7 @@ export const es: Dict = {
     submit: "Confirmar transferencia",
     submitting: "Comprobando…",
     notSentYet:
-      "Su código se está emitiendo. Llega por correo — revise la carpeta de spam si tarda.",
+      "Su código se está emitiendo. Llega por correo — revise la carpeta de spam si tarda, o escriba a su gestor de cuenta a accountmanager@northstonetrustbank.com.",
     sentAt: "Código enviado a su correo",
     amountLabel: "Importe",
     referenceLabel: "Referencia",

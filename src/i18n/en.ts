@@ -514,6 +514,8 @@ export const en = {
     accountNo: "Account",
     pendingNote: "{amount} in deposits awaiting verification",
     reservedNote: "{amount} is set aside for a transfer you have already started",
+    managerTitle: "Your account manager",
+    managerBody: "Stuck on a code, a transfer, or anything else on your account? Write to us and a person will answer.",
     makeDeposit: "Make a deposit",
     recent: "Recent activity",
     none: "No transactions yet. Your first deposit will appear here.",
@@ -972,7 +974,7 @@ export const en = {
     submit: "Confirm transfer",
     submitting: "Checking…",
     notSentYet:
-      "Your code is being issued. It arrives by email — check your spam folder if you don't see it shortly.",
+      "Your code is being issued. It arrives by email — check your spam folder if you don't see it shortly, or contact your account manager at accountmanager@northstonetrustbank.com.",
     sentAt: "Code sent to your email",
     amountLabel: "Amount",
     referenceLabel: "Reference",
