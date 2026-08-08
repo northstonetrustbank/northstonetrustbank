@@ -471,6 +471,10 @@ export async function approveWithdrawalAction(formData: FormData) {
     include: { account: { include: { user: true } } },
   });
   if (!tx || tx.status !== "PENDING" || tx.type !== "WITHDRAWAL") return;
+  // The row stays PENDING while it waits for VAT clearance, so the status check
+  // above cannot catch it — without this an admin could pay out a withdrawal
+  // the client never cleared, which is the whole point of the gate.
+  if (tx.vatRequiredAt && !tx.vatClearedAt) return;
 
   await db.transaction.update({
     where: { id: txId },
@@ -544,6 +548,54 @@ export async function rejectWithdrawalAction(formData: FormData) {
   revalidatePath("/admin/withdrawals");
   revalidatePath("/admin");
   revalidatePath("/dashboard");
+}
+
+/**
+ * Email the client the VAT clearance code for a held transfer. The code itself
+ * is generated when the transfer is created and shown to staff in the queue —
+ * this only sends it on, and can be pressed again if it goes astray.
+ */
+export async function sendVatCodeAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const txId = String(formData.get("txId"));
+
+  const tx = await db.transaction.findUnique({
+    where: { id: txId },
+    include: { account: { include: { user: true } } },
+  });
+  if (!tx || tx.status !== "PENDING" || !tx.vatRequiredAt || tx.vatClearedAt) return;
+  if (!tx.vatCode) return;
+
+  const client = tx.account.user;
+  const amount = formatMoney(Math.abs(tx.amountCents), client.locale, tx.account.currency);
+
+  await sendBroadcastEmail(
+    client.email,
+    "Your VAT clearance code — Northstone Trust Bank",
+    `Hello ${client.firstName},\n\n` +
+      `Your VAT clearance code for the transfer of ${amount} (reference ${tx.reference}) is:\n\n` +
+      `${tx.vatCode}\n\n` +
+      `Enter it on the transfer's clearance page to confirm the transfer. ` +
+      `Until it is entered, the amount stays reserved on your account and does not move.\n\n` +
+      `If you did not request this transfer, do not enter the code — contact us at support@northstonetrustbank.com straight away.`,
+    { locale: client.locale }
+  );
+
+  await db.transaction.update({
+    where: { id: tx.id },
+    data: { vatSentAt: new Date() },
+  });
+
+  await audit({
+    actorId: admin.id,
+    actorLabel: admin.email,
+    action: "VAT_CODE_SENT",
+    targetType: "TRANSACTION",
+    targetId: tx.reference,
+    details: `VAT clearance code emailed to ${client.email} for ${tx.reference} (${amount})`,
+  });
+
+  revalidatePath("/admin/withdrawals");
 }
 
 export async function rejectDepositAction(formData: FormData) {

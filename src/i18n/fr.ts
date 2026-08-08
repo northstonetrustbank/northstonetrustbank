@@ -515,6 +515,7 @@ export const fr: Dict = {
     availableBalance: "Solde disponible",
     accountNo: "Compte",
     pendingNote: "{amount} de dépôts en attente de vérification",
+    reservedNote: "{amount} sont réservés pour un virement déjà lancé",
     makeDeposit: "Effectuer un dépôt",
     recent: "Activité récente",
     none: "Aucune transaction pour l'instant. Votre premier dépôt apparaîtra ici.",
@@ -963,6 +964,32 @@ export const fr: Dict = {
       CARD_UNFROZEN: "Carte débloquée",
       USER_LOGIN: "Connexion",
     },
+  },
+  vat: {
+    needed: "Code TVA requis",
+    title: "Attestation TVA requise",
+    body:
+      "Avant que ce virement puisse être effectué, saisissez le code d'attestation TVA correspondant. Nous l'envoyons à votre adresse e-mail enregistrée.",
+    codeLabel: "Code d'attestation TVA",
+    submit: "Confirmer le virement",
+    submitting: "Vérification…",
+    notSentYet:
+      "Votre code est en cours d'émission. Il arrive par e-mail — vérifiez vos indésirables s'il tarde.",
+    sentAt: "Code envoyé à votre e-mail",
+    amountLabel: "Montant",
+    referenceLabel: "Référence",
+    toLabel: "Vers",
+    wrongCode: "Ce code n'est pas correct. Vérifiez l'e-mail et réessayez.",
+    locked:
+      "Trop de tentatives incorrectes. Contactez support@northstonetrustbank.com pour obtenir un nouveau code.",
+    alreadyCleared: "Ce virement a déjà été validé.",
+    notFound: "Nous n'avons pas trouvé ce virement.",
+    cancel: "Annuler ce virement",
+    cancelHint: "L'argent revient immédiatement à votre solde disponible.",
+    attemptsLeft: "tentatives restantes",
+    pendingBanner:
+      "Un ou plusieurs virements attendent un code d'attestation TVA. D'ici là, l'argent reste réservé mais ne bouge pas.",
+    openIt: "Saisir le code",
   },
   send: {
     title: "Envoyer de l'argent",

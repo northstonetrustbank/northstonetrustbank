@@ -75,10 +75,16 @@ export async function pendingDepositCents(accountId: string) {
   return agg._sum.amountCents ?? 0;
 }
 
-/** Total of not-yet-approved withdrawals (returned as a positive number). */
+/**
+ * Money on its way out that has not posted yet, as a positive number. This is
+ * the reservation that stops the same balance being spent twice, so it has to
+ * cover EVERY outbound row that is still PENDING — withdrawals awaiting a
+ * decision, and sends held at the VAT gate. Miss one and a client can queue up
+ * several requests that each pass the balance check on their own.
+ */
 export async function pendingWithdrawalCents(accountId: string) {
   const agg = await db.transaction.aggregate({
-    where: { accountId, status: "PENDING", type: "WITHDRAWAL" },
+    where: { accountId, status: "PENDING", type: { in: ["WITHDRAWAL", "SEND"] } },
     _sum: { amountCents: true },
   });
   return Math.abs(agg._sum.amountCents ?? 0);

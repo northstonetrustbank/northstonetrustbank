@@ -74,7 +74,7 @@ export default async function AdminLayout({
   const [pendingCount, depositCount, withdrawalCount, applicationCount, chatCount] = await Promise.all([
     db.user.count({ where: { status: "PENDING", role: "CLIENT" } }),
     db.transaction.count({ where: { status: "PENDING", type: "DEPOSIT" } }),
-    db.transaction.count({ where: { status: "PENDING", type: "WITHDRAWAL" } }),
+    db.transaction.count({ where: { status: "PENDING", type: { in: ["WITHDRAWAL", "SEND"] } } }),
     db.productApplication.count({ where: { status: "SUBMITTED" } }),
     db.chatConversation.count({ where: { unreadForAdmin: true } }),
   ]);

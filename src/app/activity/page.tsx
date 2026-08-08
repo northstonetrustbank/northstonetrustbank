@@ -184,7 +184,7 @@ export default async function ActivityPage({
         <div className="mt-6">
           <TransactionList
             rows={rows}
-            labels={{ types: t.bank.types, statuses: t.bank.statuses, reference: t.bank.reference }}
+            labels={{ types: t.bank.types, statuses: t.bank.statuses, reference: t.bank.reference, vatNeeded: t.vat.needed }}
             locale={locale}
             currency={user.currency}
             emptyText={t.activity.none}

@@ -16,7 +16,16 @@ export type LedgerRow = {
   reference: string;
   note: string | null;
   createdAt: Date;
+  // Present on money-out rows. A transfer held at the VAT gate is still
+  // PENDING, so the badge is derived from these rather than from the status.
+  vatRequiredAt?: Date | null;
+  vatClearedAt?: Date | null;
 };
+
+/** A held transfer reads "VAT code needed", not "Pending". */
+function awaitingVat(tx: LedgerRow) {
+  return Boolean(tx.vatRequiredAt) && !tx.vatClearedAt && tx.status === "PENDING";
+}
 
 export function TransactionList({
   rows,
@@ -30,6 +39,7 @@ export function TransactionList({
     types: Record<string, string>;
     statuses: Record<string, string>;
     reference: string;
+    vatNeeded: string;
   };
   locale: string;
   currency: string;
@@ -72,10 +82,14 @@ export function TransactionList({
                   </p>
                   <span
                     className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                      statusStyles[tx.status] ?? ""
+                      awaitingVat(tx)
+                        ? "bg-amber-200 text-amber-900"
+                        : (statusStyles[tx.status] ?? "")
                     }`}
                   >
-                    {labels.statuses[tx.status] ?? tx.status}
+                    {awaitingVat(tx)
+                      ? labels.vatNeeded
+                      : (labels.statuses[tx.status] ?? tx.status)}
                   </span>
                 </td>
               </tr>

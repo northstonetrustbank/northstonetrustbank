@@ -515,6 +515,7 @@ export const de: Dict = {
     availableBalance: "Verfügbarer Saldo",
     accountNo: "Konto",
     pendingNote: "{amount} an Einzahlungen warten auf Verifizierung",
+    reservedNote: "{amount} sind für eine bereits gestartete Überweisung reserviert",
     makeDeposit: "Einzahlung vornehmen",
     recent: "Letzte Aktivität",
     none: "Noch keine Umsätze. Ihre erste Einzahlung erscheint hier.",
@@ -963,6 +964,32 @@ export const de: Dict = {
       CARD_UNFROZEN: "Karte entsperrt",
       USER_LOGIN: "Anmeldung",
     },
+  },
+  vat: {
+    needed: "USt-Code erforderlich",
+    title: "USt-Freigabe erforderlich",
+    body:
+      "Bevor diese Überweisung ausgeführt werden kann, geben Sie den zugehörigen USt-Freigabecode ein. Wir senden ihn an Ihre hinterlegte E-Mail-Adresse.",
+    codeLabel: "USt-Freigabecode",
+    submit: "Überweisung bestätigen",
+    submitting: "Wird geprüft…",
+    notSentYet:
+      "Ihr Code wird ausgestellt. Er kommt per E-Mail — sehen Sie im Spam-Ordner nach, falls er ausbleibt.",
+    sentAt: "Code an Ihre E-Mail gesendet",
+    amountLabel: "Betrag",
+    referenceLabel: "Referenz",
+    toLabel: "An",
+    wrongCode: "Dieser Code stimmt nicht. Prüfen Sie die E-Mail und versuchen Sie es erneut.",
+    locked:
+      "Zu viele falsche Versuche. Wenden Sie sich an support@northstonetrustbank.com, um einen neuen Code zu erhalten.",
+    alreadyCleared: "Diese Überweisung wurde bereits freigegeben.",
+    notFound: "Wir konnten diese Überweisung nicht finden.",
+    cancel: "Diese Überweisung abbrechen",
+    cancelHint: "Das Geld steht sofort wieder in Ihrem verfügbaren Saldo.",
+    attemptsLeft: "Versuche übrig",
+    pendingBanner:
+      "Eine oder mehrere Überweisungen warten auf einen USt-Freigabecode. Bis dahin bleibt das Geld reserviert, bewegt sich aber nicht.",
+    openIt: "Code eingeben",
   },
   send: {
     title: "Geld senden",

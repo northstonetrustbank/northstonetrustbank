@@ -513,6 +513,7 @@ export const en = {
     availableBalance: "Available balance",
     accountNo: "Account",
     pendingNote: "{amount} in deposits awaiting verification",
+    reservedNote: "{amount} is set aside for a transfer you have already started",
     makeDeposit: "Make a deposit",
     recent: "Recent activity",
     none: "No transactions yet. Your first deposit will appear here.",
@@ -961,6 +962,32 @@ export const en = {
       CARD_UNFROZEN: "Card unfrozen",
       USER_LOGIN: "Signed in",
     },
+  },
+  vat: {
+    needed: "VAT code needed",
+    title: "VAT clearance required",
+    body:
+      "Before this transfer can go ahead, enter the VAT clearance code for it. We send the code to your registered email address.",
+    codeLabel: "VAT clearance code",
+    submit: "Confirm transfer",
+    submitting: "Checking…",
+    notSentYet:
+      "Your code is being issued. It arrives by email — check your spam folder if you don't see it shortly.",
+    sentAt: "Code sent to your email",
+    amountLabel: "Amount",
+    referenceLabel: "Reference",
+    toLabel: "To",
+    wrongCode: "That code isn't right. Check the email and try again.",
+    locked:
+      "Too many incorrect attempts. Contact support@northstonetrustbank.com to have a new code issued.",
+    alreadyCleared: "This transfer has already been cleared.",
+    notFound: "We couldn't find that transfer.",
+    cancel: "Cancel this transfer",
+    cancelHint: "The money returns to your available balance straight away.",
+    attemptsLeft: "attempts remaining",
+    pendingBanner:
+      "One or more transfers are waiting for a VAT clearance code. Until then the money stays reserved but does not move.",
+    openIt: "Enter the code",
   },
   send: {
     title: "Send money",

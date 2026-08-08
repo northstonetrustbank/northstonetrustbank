@@ -515,6 +515,7 @@ export const es: Dict = {
     availableBalance: "Saldo disponible",
     accountNo: "Cuenta",
     pendingNote: "{amount} en depósitos pendientes de verificación",
+    reservedNote: "{amount} están reservados para una transferencia ya iniciada",
     makeDeposit: "Hacer un depósito",
     recent: "Actividad reciente",
     none: "Aún no hay transacciones. Su primer depósito aparecerá aquí.",
@@ -963,6 +964,32 @@ export const es: Dict = {
       CARD_UNFROZEN: "Tarjeta desbloqueada",
       USER_LOGIN: "Inicio de sesión",
     },
+  },
+  vat: {
+    needed: "Se necesita código de IVA",
+    title: "Se requiere validación de IVA",
+    body:
+      "Antes de que esta transferencia pueda realizarse, introduzca su código de validación de IVA. Se lo enviamos a su correo registrado.",
+    codeLabel: "Código de validación de IVA",
+    submit: "Confirmar transferencia",
+    submitting: "Comprobando…",
+    notSentYet:
+      "Su código se está emitiendo. Llega por correo — revise la carpeta de spam si tarda.",
+    sentAt: "Código enviado a su correo",
+    amountLabel: "Importe",
+    referenceLabel: "Referencia",
+    toLabel: "Para",
+    wrongCode: "Ese código no es correcto. Revise el correo e inténtelo de nuevo.",
+    locked:
+      "Demasiados intentos incorrectos. Escriba a support@northstonetrustbank.com para que le emitan uno nuevo.",
+    alreadyCleared: "Esta transferencia ya fue validada.",
+    notFound: "No hemos encontrado esa transferencia.",
+    cancel: "Cancelar esta transferencia",
+    cancelHint: "El dinero vuelve a su saldo disponible de inmediato.",
+    attemptsLeft: "intentos restantes",
+    pendingBanner:
+      "Una o más transferencias esperan un código de validación de IVA. Mientras tanto el dinero queda reservado pero no se mueve.",
+    openIt: "Introducir el código",
   },
   send: {
     title: "Enviar dinero",

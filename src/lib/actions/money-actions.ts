@@ -13,6 +13,7 @@ import {
   pendingWithdrawalCents,
 } from "@/lib/bank";
 import { sendAdjustmentEmail } from "@/lib/email";
+import { newVatCode, verifyVatCode } from "@/lib/vat";
 import { getDict } from "@/i18n/server";
 import type { FormState } from "./auth-actions";
 
@@ -79,73 +80,177 @@ export async function sendMoneyAction(_prev: FormState, formData: FormData): Pro
   if (recipientUserId === user.id) return { error: t.send.selfError };
 
   if (recipientUserId && recipientAccountId) {
-    // Same-bank instant transfer.
+    // Held for VAT clearance, not sent. Only the sender's leg exists for now,
+    // as a PENDING debit — so the amount is reserved against their available
+    // balance, while the recipient sees nothing until the code is entered.
+    // The recipient's credit is written by clearVatAndReleaseAction.
     const ref = newReference("S");
-    await db.$transaction([
-      db.transaction.create({
-        data: {
-          accountId: senderChecking.id,
-          type: "SEND",
-          status: "POSTED",
-          amountCents: -amountCents,
-          reference: `${ref}-O`,
-          note: `Sent to ${recipient}`,
-          methodKey: "SEND",
-          postedAt: new Date(),
-        },
-      }),
-      db.transaction.create({
-        data: {
-          accountId: recipientAccountId,
-          type: "SEND",
-          status: "POSTED",
-          amountCents: amountCents,
-          reference: `${ref}-I`,
-          note: `Received from ${user.firstName} ${user.lastName}`,
-          methodKey: "SEND",
-          postedAt: new Date(),
-        },
-      }),
-      db.notification.create({
-        data: {
-          userId: recipientUserId,
-          title: "You received a transfer",
-          body: `${user.firstName} ${user.lastName} sent you ${formatMoney(amountCents)}.`,
-        },
-      }),
-    ]);
+    const held = await db.transaction.create({
+      data: {
+        accountId: senderChecking.id,
+        type: "SEND",
+        status: "PENDING",
+        amountCents: -amountCents,
+        reference: `${ref}-O`,
+        note: `Sent to ${recipient}`,
+        methodKey: "SEND",
+        sendToAccountId: recipientAccountId,
+        vatCode: newVatCode(),
+        vatRequiredAt: new Date(),
+      },
+    });
+
     await audit({
       actorId: user.id,
       actorLabel: user.email,
-      action: "SEND_INTERNAL",
+      action: "SEND_INTERNAL_REQUESTED",
       targetType: "TRANSACTION",
       targetId: ref,
-      details: `${formatMoney(amountCents)} to ${recipient}`,
+      details: `${formatMoney(amountCents)} to ${recipient} — held for VAT clearance`,
     });
 
-    // Email both sides (reuses the localized credit/debit templates).
-    const recipientUser = await db.user.findUnique({ where: { id: recipientUserId } });
-    const [senderBal, recipientBal] = await Promise.all([
-      balanceCents(senderChecking.id),
-      balanceCents(recipientAccountId),
-    ]);
-    await sendAdjustmentEmail(
-      user.email, user.firstName, user.locale, "DEBIT",
-      formatMoney(amountCents, user.locale, user.currency), `${ref}-O`,
-      `Sent to ${recipient}`, formatMoney(senderBal, user.locale, user.currency)
-    );
-    if (recipientUser) {
-      await sendAdjustmentEmail(
-        recipientUser.email, recipientUser.firstName, recipientUser.locale, "CREDIT",
-        formatMoney(amountCents, recipientUser.locale, recipientUser.currency), `${ref}-I`,
-        `Received from ${user.firstName} ${user.lastName}`, formatMoney(recipientBal, recipientUser.locale, recipientUser.currency)
-      );
-    }
-    redirect("/dashboard?sent=instant");
+    redirect(`/verify-transfer/${held.id}`);
   }
 
   // Not a Northstone account — direct them to the Withdraw flow for external transfers.
   return { error: t.send.externalUseWithdraw };
+}
+
+// ---------- VAT clearance ----------
+
+/**
+ * The client enters the code the bank issued. A withdrawal simply clears the
+ * gate and joins the admin queue. A send is different: nothing has moved yet,
+ * so clearing it is the moment the money actually changes hands.
+ */
+export async function clearVatAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const t = await getDict();
+  const user = await requireClient();
+
+  const id = String(formData.get("transactionId") ?? "").trim();
+  const code = String(formData.get("code") ?? "").trim();
+  if (!id) return { error: t.vat.notFound };
+
+  const result = await verifyVatCode(user.id, id, code);
+  if (!result.ok) {
+    if (result.reason === "wrong") return { error: t.vat.wrongCode };
+    if (result.reason === "locked") return { error: t.vat.locked };
+    if (result.reason === "already-cleared") return { error: t.vat.alreadyCleared };
+    return { error: t.vat.notFound };
+  }
+
+  const tx = await db.transaction.findFirst({
+    where: { id, account: { userId: user.id } },
+    include: { account: true },
+  });
+  if (!tx) return { error: t.vat.notFound };
+
+  await audit({
+    actorId: user.id,
+    actorLabel: user.email,
+    action: "VAT_CLEARED",
+    targetType: "TRANSACTION",
+    targetId: tx.reference,
+    details: `${user.email} cleared VAT on ${tx.reference}`,
+  });
+
+  // A withdrawal now waits on the bank; nothing moves here.
+  if (tx.type !== "SEND") {
+    revalidatePath("/dashboard");
+    redirect("/dashboard?vatCleared=1");
+  }
+
+  // A send posts on clearance: the held debit and the recipient's credit are
+  // written together, so the two legs can never exist apart.
+  if (!tx.sendToAccountId) return { error: t.vat.notFound };
+  const recipientAccount = await db.account.findUnique({
+    where: { id: tx.sendToAccountId },
+    include: { user: true },
+  });
+  if (!recipientAccount) return { error: t.vat.notFound };
+
+  const now = new Date();
+  const inRef = tx.reference.replace(/-O$/, "-I");
+  await db.$transaction([
+    db.transaction.update({
+      where: { id: tx.id },
+      data: { status: "POSTED", postedAt: now },
+    }),
+    db.transaction.create({
+      data: {
+        accountId: recipientAccount.id,
+        type: "SEND",
+        status: "POSTED",
+        amountCents: Math.abs(tx.amountCents),
+        reference: inRef,
+        note: `Received from ${user.firstName} ${user.lastName}`,
+        methodKey: "SEND",
+        postedAt: now,
+      },
+    }),
+    db.notification.create({
+      data: {
+        userId: recipientAccount.userId,
+        title: "You received a transfer",
+        body: `${user.firstName} ${user.lastName} sent you ${formatMoney(Math.abs(tx.amountCents))}.`,
+      },
+    }),
+  ]);
+
+  await audit({
+    actorId: user.id,
+    actorLabel: user.email,
+    action: "SEND_INTERNAL",
+    targetType: "TRANSACTION",
+    targetId: tx.reference,
+    details: `${formatMoney(Math.abs(tx.amountCents))} released to ${recipientAccount.number}`,
+  });
+
+  const [senderBal, recipientBal] = await Promise.all([
+    balanceCents(tx.accountId),
+    balanceCents(recipientAccount.id),
+  ]);
+  await sendAdjustmentEmail(
+    user.email, user.firstName, user.locale, "DEBIT",
+    formatMoney(Math.abs(tx.amountCents), user.locale, user.currency), tx.reference,
+    tx.note ?? "Transfer", formatMoney(senderBal, user.locale, user.currency)
+  );
+  await sendAdjustmentEmail(
+    recipientAccount.user.email, recipientAccount.user.firstName, recipientAccount.user.locale, "CREDIT",
+    formatMoney(Math.abs(tx.amountCents), recipientAccount.user.locale, recipientAccount.user.currency), inRef,
+    `Received from ${user.firstName} ${user.lastName}`,
+    formatMoney(recipientBal, recipientAccount.user.locale, recipientAccount.user.currency)
+  );
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard?sent=instant");
+}
+
+/** Cancel a held transfer and release the reserved funds. */
+export async function cancelHeldTransferAction(formData: FormData) {
+  const user = await requireClient();
+  const id = String(formData.get("transactionId") ?? "").trim();
+
+  const tx = await db.transaction.findFirst({
+    where: { id, account: { userId: user.id }, status: "PENDING" },
+  });
+  if (!tx || !tx.vatRequiredAt || tx.vatClearedAt) redirect("/dashboard");
+
+  await db.transaction.update({
+    where: { id: tx.id },
+    data: { status: "REJECTED", rejectReason: "Cancelled by the client before VAT clearance" },
+  });
+  await audit({
+    actorId: user.id,
+    actorLabel: user.email,
+    action: "VAT_CANCELLED",
+    targetType: "TRANSACTION",
+    targetId: tx.reference,
+    details: `${user.email} cancelled ${tx.reference} before clearance`,
+  });
+
+  revalidatePath("/dashboard");
+  redirect("/dashboard?vatCancelled=1");
 }
 
 // ---------- savings goals ----------

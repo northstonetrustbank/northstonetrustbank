@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSessionUser, isAdmin } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions/auth-actions";
-import { balanceCents, ensureAccount, formatMoney, getSavings, pendingDepositCents } from "@/lib/bank";
+import { balanceCents, ensureAccount, formatMoney, getSavings, pendingDepositCents, pendingWithdrawalCents } from "@/lib/bank";
 import { getDict, getLocale } from "@/i18n/server";
 import { fill } from "@/i18n";
 import { buildProductView, latestByKey, productsWithLabels } from "@/lib/product-view";
@@ -39,10 +39,14 @@ export default async function DashboardPage({
 
   const account = await ensureAccount(user.id);
   const savings = await getSavings(user.id);
-  const [balance, pending, savingsBal, transactions, notifications, applications] =
+  const [balance, pending, reservedOut, savingsBal, transactions, notifications, applications] =
     await Promise.all([
       balanceCents(account.id),
       pendingDepositCents(account.id),
+      // Money already committed to a withdrawal or a held transfer. The hero is
+      // labelled "available", so it has to come off — otherwise a client is told
+      // they have money that the next withdrawal will refuse to let them spend.
+      pendingWithdrawalCents(account.id),
       savings ? balanceCents(savings.id) : Promise.resolve(0),
       db.transaction.findMany({
         where: { accountId: account.id },
@@ -56,6 +60,18 @@ export default async function DashboardPage({
       }),
       db.productApplication.findMany({ where: { userId: user.id } }),
     ]);
+
+  // Transfers stuck at the VAT gate. Without a way back to the code screen, a
+  // client who closes that page has no route to their own held money.
+  const heldForVat = await db.transaction.findMany({
+    where: {
+      account: { userId: user.id },
+      status: "PENDING",
+      vatRequiredAt: { not: null },
+      vatClearedAt: null,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
   // Latest application per product key, turned into a card view per product.
   const appByKey = latestByKey(applications);
@@ -135,6 +151,25 @@ export default async function DashboardPage({
           </p>
         )}
 
+        {heldForVat.length > 0 && (
+          <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
+            <p className="text-sm font-medium text-amber-900">{t.vat.pendingBanner}</p>
+            <ul className="mt-2 space-y-1">
+              {heldForVat.map((tx) => (
+                <li key={tx.id}>
+                  <Link
+                    href={`/verify-transfer/${tx.id}`}
+                    className="text-sm font-semibold text-amber-900 underline underline-offset-2 hover:text-amber-950"
+                  >
+                    {formatMoney(Math.abs(tx.amountCents), locale, account.currency)} ·{" "}
+                    {tx.reference} — {t.vat.openIt}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <h1 className="text-2xl font-semibold tracking-tight text-navy-900">
           {fill(t.dashboard.welcome, { name: user.firstName })}
         </h1>
@@ -147,11 +182,18 @@ export default async function DashboardPage({
                 {t.bank.availableBalance}
               </p>
               <p className="mt-2 text-4xl font-semibold tracking-tight text-white">
-                {formatMoney(balance, locale, account.currency)}
+                {formatMoney(balance - reservedOut, locale, account.currency)}
               </p>
               <p className="mt-2 text-sm text-navy-300">
                 {t.bank.accountNo} {account.number}
               </p>
+              {reservedOut > 0 && (
+                <p className="mt-3 mr-2 inline-block rounded-full bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-100">
+                  {fill(t.bank.reservedNote, {
+                    amount: formatMoney(reservedOut, locale, account.currency),
+                  })}
+                </p>
+              )}
               {pending > 0 && (
                 <p className="mt-3 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-navy-100">
                   {fill(t.bank.pendingNote, {
@@ -286,7 +328,7 @@ export default async function DashboardPage({
         <div className="mt-4">
           <TransactionList
             rows={transactions}
-            labels={{ types: t.bank.types, statuses: t.bank.statuses, reference: t.bank.reference }}
+            labels={{ types: t.bank.types, statuses: t.bank.statuses, reference: t.bank.reference, vatNeeded: t.vat.needed }}
             locale={locale}
             currency={account.currency}
             emptyText={t.bank.none}

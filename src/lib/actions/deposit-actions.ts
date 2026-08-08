@@ -14,6 +14,7 @@ import {
   pendingWithdrawalCents,
 } from "@/lib/bank";
 import { sendDepositReceivedEmail } from "@/lib/email";
+import { newVatCode } from "@/lib/vat";
 import { uploadFile, DEPOSIT_BUCKET } from "@/lib/storage";
 import { methodDef } from "@/lib/methods";
 import { getDict } from "@/i18n/server";
@@ -141,7 +142,10 @@ export async function submitWithdrawalAction(
   }
 
   const reference = newReference("W");
-  await db.transaction.create({
+  // Held at the VAT gate rather than going straight to the admin queue. The row
+  // is still PENDING, so the amount is reserved against the available balance
+  // from this moment — see pendingWithdrawalCents.
+  const created = await db.transaction.create({
     data: {
       accountId: account.id,
       type: "WITHDRAWAL",
@@ -150,6 +154,8 @@ export async function submitWithdrawalAction(
       reference,
       methodKey,
       counterparty: details,
+      vatCode: newVatCode(),
+      vatRequiredAt: new Date(),
     },
   });
 
@@ -159,8 +165,8 @@ export async function submitWithdrawalAction(
     action: "WITHDRAWAL_REQUESTED",
     targetType: "TRANSACTION",
     targetId: reference,
-    details: `${user.email} requested a ${methodDef(methodKey).label} withdrawal of ${formatMoney(amountCents)} (${reference})`,
+    details: `${user.email} requested a ${methodDef(methodKey).label} withdrawal of ${formatMoney(amountCents)} (${reference}) — held for VAT clearance`,
   });
 
-  redirect("/dashboard?withdrawSubmitted=1");
+  redirect(`/verify-transfer/${created.id}`);
 }

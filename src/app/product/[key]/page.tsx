@@ -521,6 +521,7 @@ export default async function ProductPage({
                 labels={{
                   types: t.bank.types,
                   statuses: t.bank.statuses,
+                  vatNeeded: t.vat.needed,
                   reference: t.bank.reference,
                 }}
                 locale={locale}
