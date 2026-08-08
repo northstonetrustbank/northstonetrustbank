@@ -517,7 +517,7 @@ export const de: Dict = {
     pendingNote: "{amount} an Einzahlungen warten auf Verifizierung",
     reservedNote: "{amount} sind für eine bereits gestartete Überweisung reserviert",
     managerTitle: "Ihr Kundenbetreuer",
-    managerBody: "Kommen Sie bei einem Code, einer Überweisung oder etwas anderem nicht weiter? Schreiben Sie uns, ein Mensch antwortet.",
+    managerBody: "Ein fester Ansprechpartner, der Ihr Konto kennt. Schreiben Sie uns zu einer Überweisung, Ihrer Karte oder etwas anderem — ein Mensch antwortet Ihnen.",
     makeDeposit: "Einzahlung vornehmen",
     recent: "Letzte Aktivität",
     none: "Noch keine Umsätze. Ihre erste Einzahlung erscheint hier.",

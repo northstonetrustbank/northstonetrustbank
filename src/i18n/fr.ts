@@ -517,7 +517,7 @@ export const fr: Dict = {
     pendingNote: "{amount} de dépôts en attente de vérification",
     reservedNote: "{amount} sont réservés pour un virement déjà lancé",
     managerTitle: "Votre gestionnaire de compte",
-    managerBody: "Bloqué sur un code, un virement ou autre chose sur votre compte ? Écrivez-nous, une personne vous répondra.",
+    managerBody: "Un interlocuteur dédié qui connaît votre compte. Écrivez-nous au sujet d'un virement, de votre carte ou d'autre chose — une personne vous répondra.",
     makeDeposit: "Effectuer un dépôt",
     recent: "Activité récente",
     none: "Aucune transaction pour l'instant. Votre premier dépôt apparaîtra ici.",

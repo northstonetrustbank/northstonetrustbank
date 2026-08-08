@@ -517,7 +517,7 @@ export const es: Dict = {
     pendingNote: "{amount} en depósitos pendientes de verificación",
     reservedNote: "{amount} están reservados para una transferencia ya iniciada",
     managerTitle: "Tu gestor de cuenta",
-    managerBody: "¿Atascado con un código, una transferencia o cualquier otra cosa de tu cuenta? Escríbenos y te responderá una persona.",
+    managerBody: "Un contacto dedicado que conoce tu cuenta. Escríbenos sobre una transferencia, tu tarjeta o cualquier otra cosa: te responderá una persona.",
     makeDeposit: "Hacer un depósito",
     recent: "Actividad reciente",
     none: "Aún no hay transacciones. Su primer depósito aparecerá aquí.",

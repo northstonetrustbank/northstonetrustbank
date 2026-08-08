@@ -515,7 +515,7 @@ export const en = {
     pendingNote: "{amount} in deposits awaiting verification",
     reservedNote: "{amount} is set aside for a transfer you have already started",
     managerTitle: "Your account manager",
-    managerBody: "Stuck on a code, a transfer, or anything else on your account? Write to us and a person will answer.",
+    managerBody: "A dedicated contact who knows your account. Write to us about a transfer, your card, or anything else — a person will reply.",
     makeDeposit: "Make a deposit",
     recent: "Recent activity",
     none: "No transactions yet. Your first deposit will appear here.",
