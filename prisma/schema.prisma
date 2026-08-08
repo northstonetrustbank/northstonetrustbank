@@ -16,6 +16,9 @@ datasource db {
 model User {
   id           String  @id @default(cuid())
   email        String  @unique
+  // Optional second sign-in identifier, stored lowercase. Staff sign in at
+  // /admin with this instead of an email; clients never have one.
+  username     String? @unique
   passwordHash String
   firstName    String
   lastName     String
@@ -231,6 +234,19 @@ model Transaction {
   rejectReason     String?
   reviewedBy       String? // admin email that verified/rejected
   proofRequestedAt DateTime? // set when admin asks the client for proof
+
+  // VAT clearance gate on money leaving an account (withdrawals and sends).
+  // The row stays PENDING throughout — deliberately, because the available
+  // balance is reserved by summing PENDING withdrawals/sends, and a separate
+  // status would quietly release that hold and let the same money go twice.
+  // "Cleared" is therefore vatClearedAt, not a status change.
+  vatCode       String? // six digits; the admin reads this to send it on
+  vatRequiredAt DateTime? // set when the request is gated
+  vatSentAt     DateTime? // set when an admin emails the code to the client
+  vatClearedAt  DateTime? // set when the client enters the right code
+  vatAttempts   Int       @default(0)
+  // A held SEND knows where it is going; the money only moves once cleared.
+  sendToAccountId String?
 
   createdAt DateTime  @default(now())
   postedAt  DateTime?

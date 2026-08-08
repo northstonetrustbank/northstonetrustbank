@@ -319,20 +319,29 @@ export async function resetPasswordAction(
 export async function loginAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const t = await getDict();
 
+  // Clients sign in with an email; staff sign in at /admin with a username.
+  // One field accepts either, so there is a single login path to reason about.
   const schema = z.object({
-    email: z.string().trim().toLowerCase().email(t.errors.emailInvalid),
+    identifier: z.string().trim().toLowerCase().min(1, t.errors.invalidCreds),
     password: z.string().min(1, t.errors.invalidCreds),
   });
   const parsed = schema.safeParse({
-    email: formData.get("email"),
+    identifier: formData.get("identifier") ?? formData.get("email"),
     password: formData.get("password"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
   }
 
-  const user = await db.user.findUnique({ where: { email: parsed.data.email } });
-  // Same message for unknown email and wrong password — don't leak which.
+  const { identifier } = parsed.data;
+  // Usernames are stored lowercase, and the identifier is already lowercased,
+  // so "Admin" and "admin" both resolve. Never pass an empty string to a
+  // findUnique on a nullable column — it would match a row with no username.
+  const user = identifier.includes("@")
+    ? await db.user.findUnique({ where: { email: identifier } })
+    : await db.user.findUnique({ where: { username: identifier } });
+
+  // Same message for unknown identifier and wrong password — don't leak which.
   if (!user || !(await verifyPassword(parsed.data.password, user.passwordHash))) {
     return { error: t.errors.invalidCreds };
   }
@@ -469,6 +478,10 @@ export async function cancelTwoFactorAction() {
 }
 
 export async function logoutAction() {
+  // Staff sign out from /admin and should land back on the staff sign-in, not
+  // on the client login page. The role is read before the session is destroyed.
+  const user = await getSessionUser();
+  const staff = user ? isAdmin(user.role) : false;
   await destroySession();
-  redirect("/login");
+  redirect(staff ? "/admin" : "/login");
 }

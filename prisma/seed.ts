@@ -5,18 +5,31 @@ import bcrypt from "bcryptjs";
 const db = new PrismaClient();
 
 const ADMIN_EMAIL = "info@northstonetrustbank.com";
-const ADMIN_PASSWORD = "ChangeMe-Northstone1"; // change immediately after first login
+// Staff sign in at /admin with this username. Stored lowercase — the sign-in
+// lowercases whatever is typed, so "Admin" and "admin" both work.
+const ADMIN_USERNAME = "admin";
+const ADMIN_PASSWORD = "257Mobag$";
 
 async function main() {
   const existing = await db.user.findUnique({ where: { email: ADMIN_EMAIL } });
   if (existing) {
-    console.log(`Super admin already exists: ${ADMIN_EMAIL}`);
+    // Upsert rather than bail out: on a database seeded before usernames
+    // existed, an early return would leave the owner unable to sign in at all.
+    await db.user.update({
+      where: { email: ADMIN_EMAIL },
+      data: {
+        username: ADMIN_USERNAME,
+        passwordHash: await bcrypt.hash(ADMIN_PASSWORD, 12),
+      },
+    });
+    console.log(`Super admin updated: ${ADMIN_EMAIL} (username ${ADMIN_USERNAME})`);
     return;
   }
 
   await db.user.create({
     data: {
       email: ADMIN_EMAIL,
+      username: ADMIN_USERNAME,
       passwordHash: await bcrypt.hash(ADMIN_PASSWORD, 12),
       firstName: "Northstone",
       lastName: "Admin",
@@ -37,9 +50,10 @@ async function main() {
   });
 
   console.log("Super admin created.");
-  console.log(`  email:    ${ADMIN_EMAIL}`);
+  console.log(`  sign in at /admin`);
+  console.log(`  username: ${ADMIN_USERNAME}`);
   console.log(`  password: ${ADMIN_PASSWORD}`);
-  console.log("Change this password after your first login.");
+  console.log(`  (email ${ADMIN_EMAIL} also works at /login)`);
 }
 
 main().finally(() => db.$disconnect());

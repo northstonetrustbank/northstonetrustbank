@@ -1,11 +1,27 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getSessionUser, isAdmin } from "@/lib/auth";
 import { logoutAction } from "@/lib/actions/auth-actions";
 import { db } from "@/lib/db";
 import { Logo } from "@/components/logo";
+import { AdminLoginForm } from "./admin-login-form";
 
 export const metadata = { title: "Admin — Northstone Trust Bank" };
+
+/** The chrome-free shell used for signing in and for dead ends. */
+function AdminGate({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex min-h-screen flex-1 items-center justify-center bg-navy-950 px-6 py-16">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 flex justify-center">
+          <Logo theme="dark" subtitle="Admin" href={null} />
+        </div>
+        <div className="rounded-2xl border border-navy-100 bg-white p-7 shadow-2xl shadow-navy-950/40">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default async function AdminLayout({
   children,
@@ -13,8 +29,46 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await getSessionUser();
-  if (!user || !isAdmin(user.role) || user.status !== "ACTIVE") {
-    redirect("/login");
+
+  // Three distinct cases, deliberately not collapsed into one redirect. Sending
+  // an unauthenticated visitor to /login used to be fine, but staff now sign in
+  // here — and a signed-in admin whose account is not ACTIVE would otherwise
+  // bounce between the form and this guard forever.
+  if (!user) {
+    return (
+      <AdminGate>
+        <h1 className="text-lg font-bold text-navy-900">Staff sign-in</h1>
+        <p className="mt-1 mb-6 text-sm text-gray-600">
+          This area is for Northstone staff. Clients sign in{" "}
+          <Link href="/login" className="font-semibold text-accent-600 hover:underline">
+            here
+          </Link>
+          .
+        </p>
+        <AdminLoginForm />
+      </AdminGate>
+    );
+  }
+
+  if (!isAdmin(user.role) || user.status !== "ACTIVE") {
+    return (
+      <AdminGate>
+        <h1 className="text-lg font-bold text-navy-900">No access to this area</h1>
+        <p className="mt-2 text-sm leading-relaxed text-gray-600">
+          You are signed in as <strong>{user.username ?? user.email}</strong>, which
+          cannot open the admin area. Sign out and use a staff account, or go to{" "}
+          <Link href="/dashboard" className="font-semibold text-accent-600 hover:underline">
+            your dashboard
+          </Link>
+          .
+        </p>
+        <form action={logoutAction} className="mt-6">
+          <button className="w-full rounded-full border border-gray-300 py-2.5 text-sm font-semibold text-navy-800 transition hover:bg-navy-50">
+            Sign out
+          </button>
+        </form>
+      </AdminGate>
+    );
   }
 
   const [pendingCount, depositCount, withdrawalCount, applicationCount, chatCount] = await Promise.all([
@@ -65,7 +119,9 @@ export default async function AdminLayout({
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
           <Logo theme="dark" href="/admin" subtitle="Admin" />
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-navy-300 sm:block">{user.email}</span>
+            <span className="hidden text-sm text-navy-300 sm:block">
+              {user.username ?? user.email}
+            </span>
             <Link
               href="/account"
               className="rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
