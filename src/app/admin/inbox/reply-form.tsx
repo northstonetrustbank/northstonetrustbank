@@ -5,7 +5,7 @@ import { replyMailAction } from "@/lib/actions/mail-actions";
 import type { FormState } from "@/lib/actions/auth-actions";
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-navy-900 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20";
+  "mt-1 w-full rounded-lg border border-line bg-ink-2 px-3 py-2 text-sm text-fg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25";
 
 export function ReplyForm({
   box,
@@ -23,7 +23,7 @@ export function ReplyForm({
 
   if (state?.ok) {
     return (
-      <p className="mt-4 rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-700">
+      <p className="mt-4 rounded-lg border border-pos/25 bg-pos/10 px-3.5 py-2.5 text-sm text-pos">
         {state.ok}
       </p>
     );
@@ -33,20 +33,20 @@ export function ReplyForm({
     <form action={formAction} className="mt-5 border-t border-navy-50 pt-5">
       <input type="hidden" name="box" value={box} />
       <input type="hidden" name="to" value={to} />
-      <p className="text-[13px] font-semibold text-navy-800">
-        Reply to <span className="text-gray-600">{to}</span>
+      <p className="text-[13px] font-semibold text-fg">
+        Reply to <span className="text-fg-muted">{to}</span>
       </p>
-      <label className="mt-3 block text-[13px] font-semibold text-navy-800">
+      <label className="mt-3 block text-[13px] font-semibold text-fg">
         Subject
         <input name="subject" defaultValue={subject} className={inputClass} />
       </label>
-      <label className="mt-3 block text-[13px] font-semibold text-navy-800">
+      <label className="mt-3 block text-[13px] font-semibold text-fg">
         Message
         <textarea name="body" rows={6} className={inputClass} placeholder="Type your reply…" />
       </label>
 
       {state?.error && (
-        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+        <p className="mt-3 rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
           {state.error}
         </p>
       )}
@@ -54,7 +54,7 @@ export function ReplyForm({
       <button
         type="submit"
         disabled={pending}
-        className="mt-4 rounded-full bg-navy-800 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-navy-700 disabled:opacity-60"
+        className="mt-4 rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-brand-400 disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send reply"}
       </button>

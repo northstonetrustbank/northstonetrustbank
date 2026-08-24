@@ -6,8 +6,8 @@ import { resetPasswordAction, type FormState } from "@/lib/actions/auth-actions"
 import { PasswordInput } from "@/components/password-input";
 
 const inputClass =
-  "mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px] text-navy-900 transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20";
-const labelClass = "block text-[13px] font-semibold text-navy-800";
+  "mt-1.5 w-full rounded-lg border border-line bg-ink-2 px-3.5 py-2.5 text-[15px] text-fg transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25";
+const labelClass = "block text-[13px] font-semibold text-fg";
 
 type Labels = {
   newPassword: string;
@@ -26,12 +26,12 @@ export function ResetForm({ token, labels }: { token: string; labels: Labels }) 
   if (state?.ok) {
     return (
       <div className="mt-6">
-        <p className="rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-700">
+        <p className="rounded-lg border border-pos/25 bg-pos/10 px-3.5 py-2.5 text-sm text-pos">
           {state.ok}
         </p>
         <Link
           href="/login"
-          className="mt-5 inline-block w-full rounded-full bg-accent-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-accent-600"
+          className="mt-5 inline-block w-full rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-400"
         >
           {labels.signIn}
         </Link>
@@ -45,7 +45,7 @@ export function ResetForm({ token, labels }: { token: string; labels: Labels }) 
       <label className={labelClass}>
         {labels.newPassword}
         <PasswordInput name="password" required minLength={10} className={inputClass} autoComplete="new-password" />
-        <span className="mt-1.5 block text-xs font-normal text-gray-500">{labels.passwordHint}</span>
+        <span className="mt-1.5 block text-xs font-normal text-fg-muted">{labels.passwordHint}</span>
       </label>
       <label className={labelClass}>
         {labels.confirmPassword}
@@ -53,7 +53,7 @@ export function ResetForm({ token, labels }: { token: string; labels: Labels }) 
       </label>
 
       {state?.error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
           {state.error}
         </p>
       )}
@@ -61,7 +61,7 @@ export function ResetForm({ token, labels }: { token: string; labels: Labels }) 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-accent-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
       >
         {pending ? "…" : labels.submit}
       </button>

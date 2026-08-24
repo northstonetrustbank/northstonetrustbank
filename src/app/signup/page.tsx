@@ -12,7 +12,7 @@ export default async function SignupPage() {
   const locale = await getLocale();
 
   return (
-    <main className="flex min-h-screen flex-1">
+    <main className="scheme-dark flex min-h-screen flex-1 bg-ink-0 text-fg">
       {/* Left brand panel */}
       <div className="relative hidden w-[42%] overflow-hidden bg-navy-900 lg:block">
         <Image src="/images/team-laptop.jpg" alt="" fill className="object-cover opacity-30" />
@@ -25,7 +25,7 @@ export default async function SignupPage() {
               <br />
               {t.auth.signupPanelTitle2}
             </h2>
-            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-navy-200">
+            <p className="mt-4 max-w-sm text-[15px] leading-relaxed text-fg-muted">
               {t.auth.signupPanelBody}
             </p>
           </div>
@@ -35,16 +35,16 @@ export default async function SignupPage() {
       {/* Form side */}
       <div className="relative flex flex-1 items-center justify-center px-6 py-12">
         <div className="absolute right-6 top-6">
-          <LanguageSwitcher current={locale} variant="light" />
+          <LanguageSwitcher current={locale} variant="dark" />
         </div>
         <div className="w-full max-w-md">
           <div className="mb-10 lg:hidden">
-            <Logo theme="light" />
+            <Logo theme="dark" />
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-navy-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-fg">
             {t.auth.signupTitle}
           </h1>
-          <p className="mt-2 text-[15px] text-gray-600">{t.auth.signupSubtitle}</p>
+          <p className="mt-2 text-[15px] text-fg-muted">{t.auth.signupSubtitle}</p>
           <SignupForm
             labels={{
               accountTypeLabel: t.auth.accountTypeLabel,
@@ -63,9 +63,9 @@ export default async function SignupPage() {
               submitting: t.auth.submitting,
             }}
           />
-          <p className="mt-8 text-center text-sm text-gray-600">
+          <p className="mt-8 text-center text-sm text-fg-muted">
             {t.auth.alreadyClient}{" "}
-            <Link href="/login" className="font-semibold text-accent-600 hover:text-accent-700">
+            <Link href="/login" className="font-semibold text-brand-400 hover:text-brand-400">
               {t.common.signIn}
             </Link>
           </p>

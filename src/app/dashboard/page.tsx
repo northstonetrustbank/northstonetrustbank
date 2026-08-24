@@ -1,21 +1,35 @@
-import { AccountManagerFooter } from "@/components/account-manager-footer";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSessionUser, isAdmin } from "@/lib/auth";
-import { logoutAction } from "@/lib/actions/auth-actions";
-import { balanceCents, ensureAccount, formatMoney, getSavings, pendingDepositCents, pendingWithdrawalCents } from "@/lib/bank";
+import { formatMoney } from "@/lib/bank";
+import { loadPortfolio, monthChangePercent } from "@/lib/portfolio";
+import { balanceTrend } from "@/lib/trend";
+import { showWelcomeBonus, welcomeBonusState } from "@/lib/promo";
 import { getDict, getLocale } from "@/i18n/server";
 import { fill } from "@/i18n";
 import { buildProductView, latestByKey, productsWithLabels } from "@/lib/product-view";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { Logo } from "@/components/logo";
-import { NotificationCenter } from "@/components/notification-center";
+import { productsFor } from "@/lib/products";
+import { AppShell, Page } from "@/components/app-shell";
+import { AccountCard } from "@/components/account-card";
 import { BankCard } from "@/components/bank-card";
+import { BalanceTrend } from "@/components/balance-trend";
+import { Greeting } from "@/components/greeting";
+import { NavIcons } from "@/components/icons";
+import { ProductBanner } from "@/components/product-banner";
 import { ProductTile } from "@/components/product-tile";
 import { TransactionList } from "@/components/transaction-list";
+import { Eyebrow, QuickAction, SectionHead } from "@/components/ui";
+import { WelcomeBonusBanner } from "@/components/welcome-bonus";
 
 export const metadata = { title: "Dashboard — Northstone Trust Bank" };
+
+const INTL_LOCALES: Record<string, string> = {
+  en: "en-US",
+  fr: "fr-FR",
+  de: "de-DE",
+  es: "es-ES",
+};
 
 export default async function DashboardPage({
   searchParams,
@@ -38,35 +52,32 @@ export default async function DashboardPage({
   const locale = await getLocale();
   const { submitted, withdrawSubmitted, transferred, applied, sent } = await searchParams;
 
-  const account = await ensureAccount(user.id);
-  const savings = await getSavings(user.id);
-  const [balance, pending, reservedOut, savingsBal, transactions, notifications, applications] =
-    await Promise.all([
-      balanceCents(account.id),
-      pendingDepositCents(account.id),
-      // Money already committed to a withdrawal or a held transfer. The hero is
-      // labelled "available", so it has to come off — otherwise a client is told
-      // they have money that the next withdrawal will refuse to let them spend.
-      pendingWithdrawalCents(account.id),
-      savings ? balanceCents(savings.id) : Promise.resolve(0),
-      db.transaction.findMany({
-        where: { accountId: account.id },
-        orderBy: { createdAt: "desc" },
-        take: 10,
-      }),
-      db.notification.findMany({
-        where: { userId: user.id },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      }),
-      db.productApplication.findMany({ where: { userId: user.id } }),
-    ]);
+  const portfolio = await loadPortfolio(user.id);
+
+  const [transactions, applications, change, bonus, trend, pending] = await Promise.all([
+    db.transaction.findMany({
+      where: { accountId: { in: portfolio.accountIds } },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    }),
+    db.productApplication.findMany({ where: { userId: user.id } }),
+    monthChangePercent(portfolio.accountIds, portfolio.totalCents),
+    welcomeBonusState(user.id, portfolio.accountIds, user.createdAt),
+    balanceTrend(portfolio.accountIds),
+    // Anything the client is waiting on. A pending item buried in a list reads
+    // as nothing happening, which is exactly when people start worrying.
+    db.transaction.findMany({
+      where: { accountId: { in: portfolio.accountIds }, status: "PENDING" },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    }),
+  ]);
 
   // Transfers stuck at the VAT gate. Without a way back to the code screen, a
   // client who closes that page has no route to their own held money.
   const heldForVat = await db.transaction.findMany({
     where: {
-      account: { userId: user.id },
+      accountId: { in: portfolio.accountIds },
       status: "PENDING",
       vatRequiredAt: { not: null },
       vatClearedAt: null,
@@ -82,9 +93,9 @@ export default async function DashboardPage({
       def,
       item,
       app: appByKey.get(def.key) ?? null,
-      savingsOpen: Boolean(savings),
-      savingsBalanceCents: savingsBal,
-      savingsNumber: savings?.number,
+      savingsOpen: Boolean(portfolio.savings),
+      savingsBalanceCents: portfolio.savings?.balanceCents ?? 0,
+      savingsNumber: portfolio.savings?.number,
       t,
       locale,
       currency: user.currency,
@@ -92,77 +103,49 @@ export default async function DashboardPage({
     })
   );
 
-  const dateFmt = new Intl.DateTimeFormat(
-    { en: "en-US", fr: "fr-FR", de: "de-DE", es: "es-ES" }[locale],
-    { dateStyle: "medium" }
-  );
+  // Savings is a personal product — business clients have no /product/SAVINGS
+  // page, so offering them one would land on a 404.
+  const savingsOffered = productsFor(user.accountType).some((d) => d.key === "SAVINGS");
 
-  const notifItems = notifications.map((n) => ({
-    id: n.id,
-    title: n.title,
-    body: n.body,
-    unread: n.readAt === null,
-    time: dateFmt.format(n.createdAt),
+  const dateFmt = new Intl.DateTimeFormat(INTL_LOCALES[locale] ?? "en-US", { dateStyle: "medium" });
+  const shortDate = new Intl.DateTimeFormat(INTL_LOCALES[locale] ?? "en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  // Formatted server-side so the chart carries no locale or currency logic.
+  const trendData = trend.points.map((p) => ({
+    v: p.balanceCents,
+    date: shortDate.format(p.at),
+    value: formatMoney(p.balanceCents, locale, portfolio.currency),
   }));
 
+  const banners = [
+    submitted && t.bank.submittedBanner,
+    withdrawSubmitted && t.bank.withdrawSubmittedBanner,
+    transferred && t.bank.transferredBanner,
+    applied && t.bank.appliedBanner,
+    sent && (sent === "instant" ? t.bank.sentInstantBanner : t.bank.sentPendingBanner),
+  ].filter(Boolean) as string[];
+
   return (
-    <main className="flex-1 bg-navy-50/50">
-      <header className="border-b border-white/10 bg-navy-900">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Logo theme="dark" href="/dashboard" />
-          <div className="flex items-center gap-3">
-            <NotificationCenter
-              items={notifItems}
-              labels={{ title: t.notif.title, empty: t.notif.empty, dismiss: t.notif.dismiss }}
-            />
-            <LanguageSwitcher current={locale} variant="dark" />
-            <form action={logoutAction}>
-              <button className="rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
-                {t.common.signOut}
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        {submitted && (
-          <p className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-            {t.bank.submittedBanner}
-          </p>
-        )}
-        {withdrawSubmitted && (
-          <p className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-            {t.bank.withdrawSubmittedBanner}
-          </p>
-        )}
-        {transferred && (
-          <p className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-            {t.bank.transferredBanner}
-          </p>
-        )}
-        {applied && (
-          <p className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-            {t.bank.appliedBanner}
-          </p>
-        )}
-        {sent && (
-          <p className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-            {sent === "instant" ? t.bank.sentInstantBanner : t.bank.sentPendingBanner}
-          </p>
-        )}
-
+    <AppShell
+      user={user}
+      active="dashboard"
+      title={t.dashboard.overview}
+    >
+      <Page className="space-y-6">
         {heldForVat.length > 0 && (
-          <div className="mb-6 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3">
-            <p className="text-sm font-medium text-amber-900">{t.vat.pendingBanner}</p>
+          <div className="rounded-xl border border-gift/35 bg-gift/10 px-4 py-3">
+            <p className="text-sm font-medium text-gift">{t.vat.pendingBanner}</p>
             <ul className="mt-2 space-y-1">
               {heldForVat.map((tx) => (
                 <li key={tx.id}>
                   <Link
                     href={`/verify-transfer/${tx.id}`}
-                    className="text-sm font-semibold text-amber-900 underline underline-offset-2 hover:text-amber-950"
+                    className="tnum text-sm font-semibold text-gift underline underline-offset-2"
                   >
-                    {formatMoney(Math.abs(tx.amountCents), locale, account.currency)} ·{" "}
+                    {formatMoney(Math.abs(tx.amountCents), locale, portfolio.currency)} ·{" "}
                     {tx.reference} — {t.vat.openIt}
                   </Link>
                 </li>
@@ -171,179 +154,322 @@ export default async function DashboardPage({
           </div>
         )}
 
-        <h1 className="text-2xl font-semibold tracking-tight text-navy-900">
-          {fill(t.dashboard.welcome, { name: user.firstName })}
-        </h1>
+        {banners.map((text) => (
+          <p
+            key={text}
+            className="rounded-xl border border-pos/25 bg-pos/10 px-4 py-3 text-sm font-medium text-pos"
+          >
+            {text}
+          </p>
+        ))}
 
-        {/* Balance hero */}
-        <div className="mt-6 overflow-hidden rounded-2xl bg-gradient-to-br from-navy-800 to-navy-950 p-8 shadow-lg shadow-navy-900/20">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-navy-300">
-                {t.bank.availableBalance}
-              </p>
-              <p className="mt-2 text-4xl font-semibold tracking-tight text-white">
-                {formatMoney(balance - reservedOut, locale, account.currency)}
-              </p>
-              <p className="mt-2 text-sm text-navy-300">
-                {t.bank.accountNo} {account.number}
-              </p>
-              {reservedOut > 0 && (
-                <p className="mt-3 mr-2 inline-block rounded-full bg-amber-400/20 px-3 py-1 text-xs font-medium text-amber-100">
-                  {fill(t.bank.reservedNote, {
-                    amount: formatMoney(reservedOut, locale, account.currency),
-                  })}
-                </p>
-              )}
-              {pending > 0 && (
-                <p className="mt-3 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-navy-100">
-                  {fill(t.bank.pendingNote, {
-                    amount: formatMoney(pending, locale, account.currency),
-                  })}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/deposit"
-                className="rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600"
-              >
-                {t.bank.makeDeposit}
-              </Link>
-              <Link
-                href="/withdraw"
-                className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                {t.bank.withdraw}
-              </Link>
-              <Link
-                href="/send"
-                className="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-              >
-                {t.bank.sendMoney}
-              </Link>
-            </div>
-          </div>
-        </div>
+        {showWelcomeBonus(bonus) && !bonus.credited && (
+          <WelcomeBonusBanner
+            state={bonus}
+            t={t}
+            locale={locale}
+            currency={portfolio.currency}
+            creditedDate={null}
+          />
+        )}
 
-        {/* Quick links */}
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/activity"
-            className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40 hover:shadow-sm"
-          >
-            {t.activity.link}
-          </Link>
-          <Link
-            href="/statements"
-            className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40 hover:shadow-sm"
-          >
-            {t.statements.link}
-          </Link>
-          <Link
-            href="/goals"
-            className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40 hover:shadow-sm"
-          >
-            {t.bank.goalsLink}
-          </Link>
-          <Link
-            href="/account"
-            className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40 hover:shadow-sm"
-          >
-            {t.bank.accountSettings}
-          </Link>
-          <Link
-            href="/support"
-            className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40 hover:shadow-sm"
-          >
-            <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" />
-            {t.support.link}
-          </Link>
-          {savings && (
-            <Link
-              href="/transfer"
-              className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40 hover:shadow-sm"
-            >
-              {t.bank.transfer}
-            </Link>
-          )}
-        </div>
-
-        {/* Product suite for the client's account type — every product as a card */}
-        <h2 className="mt-10 text-lg font-semibold tracking-tight text-navy-900">
-          {t.products.yourProducts}
-        </h2>
-        <p className="mt-1 text-sm text-gray-500">{t.products.productsSubtitle}</p>
-        <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {productViews.map((v) => (
-            <Link
-              key={v.def.key}
-              href={v.href}
-              className="group block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-500 focus-visible:ring-offset-2"
-            >
-              {v.render === "card" ? (
-                <BankCard
-                  theme={v.theme}
-                  productName={v.title}
-                  badge={v.badge}
-                  holder={v.holder}
-                  holderPlaceholder={v.holderPlaceholder}
-                  number={v.number}
-                  expiry={v.expiry}
-                  valueLabel={v.valueLabel}
-                  value={v.value}
-                  status={v.status}
-                  placeholder={v.placeholder}
-                  className={`transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl ${
-                    v.placeholder ? "opacity-80 group-hover:opacity-100" : ""
-                  }`}
+        {/* Balance — the one thing on the page allowed to be loud */}
+        <section className="rise">
+          <div>
+            <div className="min-w-0">
+              <p className="text-[15px] text-fg-muted">
+                <Greeting
+                  morning={fill(t.dashboard.greetingMorning, { name: user.firstName })}
+                  afternoon={fill(t.dashboard.greetingAfternoon, { name: user.firstName })}
+                  evening={fill(t.dashboard.greetingEvening, { name: user.firstName })}
+                  fallback={fill(t.dashboard.welcomeBack, { name: user.firstName })}
                 />
-              ) : (
-                <ProductTile
-                  title={v.title}
-                  art={v.art}
-                  valueLabel={v.valueLabel}
-                  value={v.value}
-                  status={v.status}
-                  placeholder={v.placeholder}
-                  cta={null}
-                  className="transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
-                />
-              )}
-              <div className="mt-3 flex items-center gap-2 px-1">
-                <p className="text-sm font-semibold text-navy-900">{v.title}</p>
-                {!v.value && (
-                  <span className="rounded-full bg-accent-50 px-2.5 py-0.5 text-[11px] font-semibold text-accent-700 transition group-hover:bg-accent-500 group-hover:text-white">
-                    {v.cta}
+              </p>
+              <Eyebrow className="mt-4">{t.dashboard.totalBalance}</Eyebrow>
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <p className="display text-[40px] font-semibold leading-none text-fg sm:text-[52px]">
+                  {formatMoney(
+                    portfolio.totalCents - portfolio.totalPendingWithdrawalCents,
+                    locale,
+                    portfolio.currency
+                  )}
+                </p>
+                {change !== null && (
+                  <span
+                    className={`tnum inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[12px] font-semibold ${
+                      change >= 0 ? "bg-pos/12 text-pos" : "bg-neg/12 text-neg"
+                    }`}
+                  >
+                    {change >= 0 ? "+" : ""}
+                    {change.toFixed(1)}% {t.dashboard.thisMonth}
                   </span>
                 )}
               </div>
-            </Link>
-          ))}
+              {portfolio.totalPendingWithdrawalCents > 0 && (
+                <p className="tnum mt-3 mr-2 inline-block rounded-lg bg-gift/15 px-3 py-1 text-xs font-medium text-gift">
+                  {fill(t.bank.reservedNote, {
+                    amount: formatMoney(
+                      portfolio.totalPendingWithdrawalCents,
+                      locale,
+                      portfolio.currency
+                    ),
+                  })}
+                </p>
+              )}
+              {portfolio.totalPendingDepositCents > 0 && (
+                <p className="tnum mt-3 inline-block rounded-lg bg-ink-2 px-3 py-1 text-xs font-medium text-fg-muted">
+                  {fill(t.bank.pendingNote, {
+                    amount: formatMoney(
+                      portfolio.totalPendingDepositCents,
+                      locale,
+                      portfolio.currency
+                    ),
+                  })}
+                </p>
+              )}
+            </div>
+
+          </div>
+
+          {trend.hasShape && (
+            <div className="-mx-1 mt-3">
+              <BalanceTrend data={trendData} label={t.dashboard.trendLabel} />
+            </div>
+          )}
+        </section>
+
+        <div className="rise grid grid-cols-3 gap-2 sm:flex sm:gap-3" style={{ animationDelay: "80ms" }}>
+          <QuickAction href="/transfers?tab=deposit" icon="plus" label={t.bank.actionDeposit} />
+          <QuickAction href="/transfers?tab=send" icon="send" label={t.bank.actionSend} />
+          <QuickAction href="/transfers?tab=withdraw" icon="bank" label={t.bank.withdraw} />
+          <QuickAction href="/payments" icon="bill" label={t.payments.tabPay} />
+          {portfolio.savings && (
+            <QuickAction href="/transfers?tab=between" icon="swap" label={t.bank.transfer} />
+          )}
+          <QuickAction href="/statements" icon="statement" label={t.statements.link} />
+          <QuickAction href="/goals" icon="target" label={t.bank.actionGoals} />
         </div>
+
+        {pending.length > 0 && (
+          <section className="rise" style={{ animationDelay: "120ms" }}>
+            <SectionHead title={t.dashboard.inProgress} subtitle={t.dashboard.inProgressBody} />
+            <div className="elev-2 mt-4 overflow-hidden rounded-2xl border border-line bg-ink-1">
+              {pending.map((tx, i) => (
+                <Link
+                  key={tx.id}
+                  href={`/activity/${tx.id}`}
+                  className={`flex items-center gap-3.5 px-4 py-3.5 transition hover:bg-ink-2 sm:px-5 ${
+                    i > 0 ? "border-t border-line-soft" : ""
+                  }`}
+                >
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-400/12 text-amber-300">
+                    <NavIcons.clock className="h-[18px] w-[18px]" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-medium text-fg">
+                      {tx.note?.trim() ||
+                        (t.bank.types[tx.type as keyof typeof t.bank.types] ?? tx.type)}
+                    </p>
+                    <p className="mt-0.5 truncate text-[12px] text-fg-faint">
+                      {t.txn.stepReview}
+                    </p>
+                  </div>
+                  <p className="display shrink-0 text-[15px] font-semibold text-fg">
+                    {formatMoney(Math.abs(tx.amountCents), locale, portfolio.currency)}
+                  </p>
+                  <NavIcons.chevronRight className="h-4 w-4 shrink-0 text-fg-faint" />
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {trend.hasShape && (
+          <div className="grid grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-line bg-ink-1 p-4 sm:p-5">
+              <p className="flex items-center gap-2 text-[12px] font-medium text-fg-muted">
+                <span className="h-2 w-2 rounded-full bg-pos/100" aria-hidden="true" />
+                {t.dashboard.moneyIn}
+              </p>
+              <p className="tnum mt-1.5 text-xl font-semibold tracking-tight text-fg">
+                {formatMoney(trend.inCents, locale, portfolio.currency)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-line bg-ink-1 p-4 sm:p-5">
+              <p className="flex items-center gap-2 text-[12px] font-medium text-fg-muted">
+                <span className="h-2 w-2 rounded-full bg-neg/100" aria-hidden="true" />
+                {t.dashboard.moneyOut}
+              </p>
+              <p className="tnum mt-1.5 text-xl font-semibold tracking-tight text-fg">
+                {formatMoney(trend.outCents, locale, portfolio.currency)}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Accounts */}
+        <section>
+          <SectionHead
+            title={t.dashboard.yourAccounts}
+            href="/accounts"
+            linkLabel={t.dashboard.viewAll}
+          />
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {portfolio.accounts.map((account) => (
+              <AccountCard
+                key={account.id}
+                account={account}
+                t={t}
+                locale={locale}
+                href={`/accounts/${account.id}`}
+              />
+            ))}
+            {!portfolio.savings && savingsOffered && (
+              <Link
+                href="/product/SAVINGS"
+                className="group flex min-h-[9.5rem] flex-col items-start justify-center gap-2 rounded-2xl border border-dashed border-line bg-ink-1/60 p-5 transition hover:border-accent-500/50 hover:bg-ink-1"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-500/12 text-brand-400">
+                  <NavIcons.plus className="h-[18px] w-[18px]" />
+                </span>
+                <p className="text-sm font-semibold text-fg">{t.bank.openSavings}</p>
+                <p className="text-[13px] leading-relaxed text-fg-muted">
+                  {t.accountsPage.openSavingsBody}
+                </p>
+              </Link>
+            )}
+          </div>
+        </section>
+
+        {showWelcomeBonus(bonus) && bonus.credited && (
+          <WelcomeBonusBanner
+            state={bonus}
+            t={t}
+            locale={locale}
+            currency={portfolio.currency}
+            creditedDate={bonus.creditedAt ? dateFmt.format(bonus.creditedAt) : null}
+          />
+        )}
+
+        {/* Product suite for the client's account type */}
+        <section>
+          <SectionHead title={t.products.yourProducts} subtitle={t.products.productsSubtitle} />
+
+          {/* Phone: stacked banners. The artwork fills the right half of each
+              card and bleeds off its edge, so the suite still looks like a
+              bank, while five of them come to ~630px instead of the ~1900px
+              five full tiles took. Nothing scrolls sideways. */}
+          <div className="mt-4 space-y-3 sm:hidden">
+            {productViews.map((v) => (
+              <Link key={v.def.key} href={v.href} className="group block">
+                <ProductBanner
+                  title={v.title}
+                  body={v.body}
+                  art={v.render === "tile" ? v.art : null}
+                  theme={v.render === "card" ? v.theme : null}
+                  badge={v.render === "card" ? v.badge : null}
+                  holder={v.render === "card" ? v.holder : null}
+                  holderPlaceholder={v.render === "card" ? v.holderPlaceholder : ""}
+                  number={v.render === "card" ? v.number : null}
+                  expiry={v.render === "card" ? v.expiry : null}
+                  valueLabel={v.valueLabel}
+                  value={v.value}
+                  status={v.status}
+                  cta={v.cta}
+                  placeholder={v.placeholder}
+                />
+              </Link>
+            ))}
+          </div>
+
+          {/* Tablet and up there is room for every face at full size. */}
+          <div className="mt-5 hidden gap-5 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+            {productViews.map((v) => (
+              <Link
+                key={v.def.key}
+                href={v.href}
+                className="group block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+              >
+                {v.render === "card" ? (
+                  <BankCard
+                    theme={v.theme}
+                    productName={v.title}
+                    badge={v.badge}
+                    holder={v.holder}
+                    holderPlaceholder={v.holderPlaceholder}
+                    number={v.number}
+                    expiry={v.expiry}
+                    valueLabel={v.valueLabel}
+                    value={v.value}
+                    status={v.status}
+                    placeholder={v.placeholder}
+                    className={`transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl ${
+                      v.placeholder ? "opacity-80 group-hover:opacity-100" : ""
+                    }`}
+                  />
+                ) : (
+                  <ProductTile
+                    title={v.title}
+                    art={v.art}
+                    valueLabel={v.valueLabel}
+                    value={v.value}
+                    status={v.status}
+                    placeholder={v.placeholder}
+                    cta={null}
+                    className="transition duration-300 group-hover:-translate-y-1 group-hover:shadow-2xl"
+                  />
+                )}
+                {/* A product needs a name, a line on what it is, and a figure
+                    or an action — not a title with a pill stuck to it. */}
+                <div className="mt-3 flex items-end justify-between gap-3 px-1">
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-semibold text-fg">{v.title}</p>
+                    {v.value ? (
+                      <p className="tnum mt-0.5 truncate text-[13px] text-fg-muted">
+                        {v.valueLabel ? `${v.valueLabel}: ` : ""}
+                        {v.value}
+                      </p>
+                    ) : (
+                      <p className="mt-0.5 line-clamp-1 text-[13px] text-fg-muted">{v.body}</p>
+                    )}
+                  </div>
+                  {!v.value && (
+                    <span className="shrink-0 text-[13px] font-medium text-brand-400 transition group-hover:text-fg">
+                      {v.cta}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Recent activity */}
-        <h2 className="mt-10 text-lg font-semibold tracking-tight text-navy-900">
-          {t.bank.recent}
-        </h2>
-        <div className="mt-4">
-          <TransactionList
-            rows={transactions}
-            labels={{ types: t.bank.types, statuses: t.bank.statuses, reference: t.bank.reference, vatNeeded: t.vat.needed }}
-            locale={locale}
-            currency={account.currency}
-            emptyText={t.bank.none}
-          />
-        </div>
+        <section>
+          <SectionHead title={t.bank.recent} href="/activity" linkLabel={t.dashboard.viewAll} />
+          <div className="mt-4">
+            <TransactionList
+              rows={transactions}
+              labels={{
+                types: t.bank.types,
+                statuses: t.bank.statuses,
+                vatNeeded: t.vat.needed,
+                reference: t.bank.reference,
+              }}
+              locale={locale}
+              currency={portfolio.currency}
+              emptyText={t.bank.none}
+            />
+          </div>
+        </section>
 
-        <p className="mt-8 flex items-center justify-end gap-2 text-right text-xs text-gray-400">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-300 text-[9px] font-bold text-gray-500">
+        <p className="flex items-center justify-end gap-2 text-right text-xs text-fg-faint">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-line text-[9px] font-bold text-fg-muted">
             FDIC
           </span>
           {t.bank.fdic}
         </p>
-      </div>
-      <AccountManagerFooter labels={{ title: t.bank.managerTitle, body: t.bank.managerBody }} />
-    </main>
+      </Page>
+    </AppShell>
   );
 }

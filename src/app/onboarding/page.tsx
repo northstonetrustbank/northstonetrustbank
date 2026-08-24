@@ -1,4 +1,3 @@
-import { AccountManagerFooter } from "@/components/account-manager-footer";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSessionUser, isAdmin } from "@/lib/auth";
@@ -27,14 +26,14 @@ export default async function OnboardingPage() {
   const step = !user.emailVerified ? 0 : kycCount === 0 ? 1 : 2;
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col bg-navy-50/50">
+    <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
       <header className="border-b border-white/10 bg-navy-900">
         <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-6">
           <Logo theme="dark" href={null} />
           <div className="flex items-center gap-3">
             <LanguageSwitcher current={locale} variant="dark" />
             <form action={logoutAction}>
-              <button className="rounded-full px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-white/10">
+              <button className="rounded-xl px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-ink-2">
                 {t.common.signOut}
               </button>
             </form>
@@ -52,15 +51,15 @@ export default async function OnboardingPage() {
                   i < step
                     ? "bg-green-600 text-white"
                     : i === step
-                      ? "bg-accent-500 text-white"
-                      : "bg-gray-200 text-gray-500"
+                      ? "bg-brand-500 text-white"
+                      : "bg-ink-3 text-fg-muted"
                 }`}
               >
                 {i < step ? "✓" : i + 1}
               </span>
               <span
                 className={`hidden text-sm font-semibold sm:block ${
-                  i === step ? "text-navy-900" : "text-gray-500"
+                  i === step ? "text-fg" : "text-fg-muted"
                 }`}
               >
                 {label}
@@ -72,7 +71,7 @@ export default async function OnboardingPage() {
           ))}
         </ol>
 
-        <div className="mt-10 rounded-2xl border border-gray-200 bg-white p-10 shadow-sm">
+        <div className="mt-10 rounded-2xl border border-line bg-ink-1 p-10 shadow-sm">
           {step === 0 && (
             <VerifyEmailStep
               title={t.onboarding.verifyTitle}
@@ -105,13 +104,13 @@ export default async function OnboardingPage() {
 
           {step === 2 && (
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent-50 text-2xl">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/12 text-2xl">
                 ⏳
               </div>
-              <h1 className="mt-5 text-xl font-semibold tracking-tight text-navy-900">
+              <h1 className="mt-5 text-xl font-semibold tracking-tight text-fg">
                 {t.onboarding.reviewTitle}
               </h1>
-              <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-gray-600">
+              <p className="mx-auto mt-3 max-w-md text-[15px] leading-relaxed text-fg-muted">
                 {fill(t.onboarding.reviewBody, {
                   name: user.firstName,
                   email: user.email,
@@ -121,7 +120,6 @@ export default async function OnboardingPage() {
           )}
         </div>
       </div>
-      <AccountManagerFooter labels={{ title: t.bank.managerTitle, body: t.bank.managerBody }} />
     </main>
   );
 }

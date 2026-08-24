@@ -280,3 +280,37 @@ export async function toggleFreezeAction(formData: FormData) {
   revalidatePath(`/product/${app.productKey}`);
   revalidatePath("/dashboard");
 }
+
+// ---------- card controls (contactless / online payments) ----------
+
+/**
+ * A client turning their own card's contactless or online payments on or off.
+ * Spending limits are deliberately NOT settable here — those are set by the
+ * team on the application, the same way a real card's limits are.
+ */
+export async function updateCardControlAction(formData: FormData) {
+  const user = await requireClient();
+  const appId = String(formData.get("appId"));
+  const control = String(formData.get("control"));
+  if (control !== "contactless" && control !== "onlinePayments") return;
+
+  const def = await db.productApplication.findFirst({
+    where: { id: appId, userId: user.id, status: "APPROVED" },
+  });
+  if (!def) return;
+
+  const next = !def[control];
+  await db.productApplication.update({ where: { id: def.id }, data: { [control]: next } });
+
+  await audit({
+    actorId: user.id,
+    actorLabel: user.email,
+    action: next ? "CARD_CONTROL_ENABLED" : "CARD_CONTROL_DISABLED",
+    targetType: "APPLICATION",
+    targetId: def.id,
+    details: `${control} ${next ? "enabled" : "disabled"} on ${def.productKey}`,
+  });
+
+  revalidatePath("/cards");
+  revalidatePath(`/product/${def.productKey}`);
+}

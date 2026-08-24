@@ -16,19 +16,19 @@ export default async function ResetPage({
   const locale = await getLocale();
 
   return (
-    <main className="flex min-h-screen flex-1 items-center justify-center bg-navy-50/50 px-4 py-12">
+    <main className="scheme-dark flex min-h-screen flex-1 items-center justify-center bg-ink-0 px-4 py-12 text-fg">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-between">
-          <Logo theme="light" />
+          <Logo theme="dark" />
           <LanguageSwitcher current={locale} variant="light" />
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-          <h1 className="text-2xl font-semibold tracking-tight text-navy-900">
+        <div className="rounded-2xl border border-line bg-ink-1 p-8 shadow-sm">
+          <h1 className="text-2xl font-semibold tracking-tight text-fg">
             {t.reset.chooseTitle}
           </h1>
           {token ? (
             <>
-              <p className="mt-2 text-[15px] text-gray-600">{t.reset.chooseSubtitle}</p>
+              <p className="mt-2 text-[15px] text-fg-muted">{t.reset.chooseSubtitle}</p>
               <ResetForm
                 token={token}
                 labels={{
@@ -41,13 +41,13 @@ export default async function ResetPage({
               />
             </>
           ) : (
-            <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+            <p className="mt-4 rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
               {t.reset.invalid}
             </p>
           )}
         </div>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          <Link href="/login" className="font-semibold text-accent-600 hover:text-accent-700">
+        <p className="mt-6 text-center text-sm text-fg-muted">
+          <Link href="/login" className="font-semibold text-brand-400 hover:text-brand-400">
             {t.common.signIn}
           </Link>
         </p>

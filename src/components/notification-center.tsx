@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { markNotificationsReadAction } from "@/lib/actions/broadcast-actions";
 
@@ -72,32 +73,32 @@ export function NotificationCenter({
         type="button"
         onClick={togglePanel}
         aria-label={labels.title}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+        className="relative flex h-9 w-9 items-center justify-center rounded-full text-white transition hover:bg-ink-2"
       >
         <BellIcon className="h-[19px] w-[19px]" />
         {unread.length > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-500 px-1 text-[10px] font-bold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-500 px-1 text-[10px] font-bold text-white">
             {unread.length}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl shadow-navy-900/10">
-          <p className="border-b border-gray-100 px-4 py-3 text-sm font-semibold text-navy-900">
+        <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-line bg-ink-1 shadow-xl shadow-navy-900/10">
+          <p className="border-b border-line bg-ink-2-soft px-4 py-3 text-sm font-semibold text-fg">
             {labels.title}
           </p>
           <div className="max-h-96 overflow-y-auto">
             {items.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-500">{labels.empty}</p>
+              <p className="px-4 py-8 text-center text-sm text-fg-muted">{labels.empty}</p>
             ) : (
               items.map((n) => (
                 <div key={n.id} className="border-b border-gray-50 px-4 py-3 last:border-0">
-                  <p className="text-sm font-semibold text-navy-900">{n.title}</p>
-                  <p className="mt-0.5 whitespace-pre-line text-[13px] leading-relaxed text-gray-600">
+                  <p className="text-sm font-semibold text-fg">{n.title}</p>
+                  <p className="mt-0.5 whitespace-pre-line text-[13px] leading-relaxed text-fg-muted">
                     {n.body}
                   </p>
-                  <p className="mt-1 text-[11px] text-gray-400">{n.time}</p>
+                  <p className="mt-1 text-[11px] text-fg-faint">{n.time}</p>
                 </div>
               ))
             )}
@@ -105,31 +106,34 @@ export function NotificationCenter({
         </div>
       )}
 
-      {/* Login popup toast */}
-      {toast.length > 0 && (
-        <div className="fixed right-4 top-20 z-[60] w-80 space-y-3">
+      {/* Login popup toast — portalled for the same reason as the drawer: a
+          backdrop-filtered header would otherwise pin it inside the bar. */}
+      {toast.length > 0 &&
+        createPortal(
+          <div className="fixed right-4 top-20 z-[60] w-[min(20rem,calc(100vw-2rem))] space-y-3">
           {toast.map((n) => (
             <div
               key={n.id}
-              className="rounded-2xl border border-gray-200 bg-white p-4 shadow-xl shadow-navy-900/15"
+              className="rounded-2xl border border-line bg-ink-1 p-4 shadow-xl shadow-navy-900/15"
             >
               <div className="flex items-start justify-between gap-3">
-                <p className="text-sm font-semibold text-navy-900">{n.title}</p>
+                <p className="text-sm font-semibold text-fg">{n.title}</p>
                 <button
                   onClick={() => setToast((t) => t.filter((x) => x.id !== n.id))}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-fg-faint hover:text-fg-muted"
                   aria-label={labels.dismiss}
                 >
                   ✕
                 </button>
               </div>
-              <p className="mt-1 whitespace-pre-line text-[13px] leading-relaxed text-gray-600">
+              <p className="mt-1 whitespace-pre-line text-[13px] leading-relaxed text-fg-muted">
                 {n.body}
               </p>
             </div>
           ))}
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

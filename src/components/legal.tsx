@@ -16,7 +16,7 @@ export async function LegalShell({
   const locale = await getLocale();
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col bg-navy-50/40">
+    <main className="flex min-h-screen flex-1 flex-col bg-navy-50/40 text-[#101828]">
       <header className="border-b border-white/10 bg-navy-900">
         <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
           <Logo theme="dark" />
@@ -24,7 +24,7 @@ export async function LegalShell({
             <LanguageSwitcher current={locale} variant="dark" />
             <Link
               href="/"
-              className="rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
             >
               {t.legal.back}
             </Link>

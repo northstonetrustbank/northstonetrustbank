@@ -83,9 +83,9 @@ export async function sendMoneyAction(_prev: FormState, formData: FormData): Pro
     // Held for VAT clearance, not sent. Only the sender's leg exists for now,
     // as a PENDING debit — so the amount is reserved against their available
     // balance, while the recipient sees nothing until the code is entered.
-    // The recipient's credit is written by clearVatAndReleaseAction.
+    // The recipient's credit is written by clearVatAction.
     const ref = newReference("S");
-    const held = await db.transaction.create({
+    const heldTx = await db.transaction.create({
       data: {
         accountId: senderChecking.id,
         type: "SEND",
@@ -109,7 +109,7 @@ export async function sendMoneyAction(_prev: FormState, formData: FormData): Pro
       details: `${formatMoney(amountCents)} to ${recipient} — held for VAT clearance`,
     });
 
-    redirect(`/verify-transfer/${held.id}`);
+    redirect(`/verify-transfer/${heldTx.id}`);
   }
 
   // Not a Northstone account — direct them to the Withdraw flow for external transfers.

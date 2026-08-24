@@ -50,24 +50,24 @@ export function KycStep({
 
   return (
     <div>
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent-50 text-2xl">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/12 text-2xl">
         🪪
       </div>
-      <h1 className="mt-5 text-center text-xl font-semibold tracking-tight text-navy-900">
+      <h1 className="mt-5 text-center text-xl font-semibold tracking-tight text-fg">
         {title}
       </h1>
-      <p className="mx-auto mt-3 max-w-md text-center text-[15px] leading-relaxed text-gray-600">
+      <p className="mx-auto mt-3 max-w-md text-center text-[15px] leading-relaxed text-fg-muted">
         {body}
       </p>
 
       <form action={formAction} className="mx-auto mt-8 max-w-md space-y-5">
-        <label className="block text-[13px] font-semibold text-navy-800">
+        <label className="block text-[13px] font-semibold text-fg">
           {docTypeLabel}
           <select
             name="docType"
             value={docType}
             onChange={(e) => setDocType(e.target.value)}
-            className="mt-1.5 w-full cursor-pointer rounded-lg border border-gray-300 bg-white px-3.5 py-2.5 text-[15px] text-navy-900 transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
+            className="mt-1.5 w-full cursor-pointer rounded-lg border border-line bg-ink-1 px-3.5 py-2.5 text-[15px] text-fg transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
           >
             {Object.entries(docTypes).map(([value, label]) => (
               <option key={value} value={value}>
@@ -77,7 +77,7 @@ export function KycStep({
           </select>
         </label>
 
-        <div className="block text-[13px] font-semibold text-navy-800">
+        <div className="block text-[13px] font-semibold text-fg">
           {frontLabel}
           <FileField
             name="documentFront"
@@ -90,11 +90,11 @@ export function KycStep({
         </div>
 
         {isPassport ? (
-          <p className="rounded-lg border border-navy-100 bg-navy-50/60 px-3.5 py-2.5 text-xs font-normal text-navy-700">
+          <p className="rounded-lg border border-line bg-ink-2 px-3.5 py-2.5 text-xs font-normal text-fg-muted">
             {passportNote}
           </p>
         ) : (
-          <div className="block text-[13px] font-semibold text-navy-800">
+          <div className="block text-[13px] font-semibold text-fg">
             {backLabel}
             <FileField
               name="documentBack"
@@ -107,7 +107,7 @@ export function KycStep({
           </div>
         )}
 
-        <div className="block text-[13px] font-semibold text-navy-800">
+        <div className="block text-[13px] font-semibold text-fg">
           {selfieLabel}
           <FileField
             name="documentSelfie"
@@ -117,13 +117,13 @@ export function KycStep({
             optimisingLabel={optimisingLabel}
             tooBigLabel={tooBigLabel}
           />
-          <span className="mt-1.5 block text-xs font-normal text-gray-500">{selfieHint}</span>
+          <span className="mt-1.5 block text-xs font-normal text-fg-muted">{selfieHint}</span>
         </div>
 
-        <p className="text-xs font-normal text-gray-500">{uploadHint}</p>
+        <p className="text-xs font-normal text-fg-muted">{uploadHint}</p>
 
         {state?.error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+          <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
             {state.error}
           </p>
         )}
@@ -131,7 +131,7 @@ export function KycStep({
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-full bg-accent-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60"
+          className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
         >
           {pending ? submittingLabel : submitLabel}
         </button>

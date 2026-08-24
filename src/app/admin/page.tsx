@@ -1,243 +1,208 @@
-import Link from "next/link";
 import { db } from "@/lib/db";
-import { getSessionUser } from "@/lib/auth";
-import { formatMoney } from "@/lib/bank";
+import {
+  approveAccountAction,
+  rejectAccountAction,
+  deleteKycDocumentsAction,
+} from "@/lib/actions/admin-actions";
 
-/**
- * The admin home. Everything the bank's staff might need to do today, in the
- * order it needs doing, written so someone who has never used an admin panel
- * can work down the list without guessing.
- */
-
-type Job = {
-  count: number;
-  href: string;
-  title: string;
-  blurb: string;
-  cta: string;
+const DOC_LABELS: Record<string, string> = {
+  GOVERNMENT_ID: "National ID card",
+  DRIVERS_LICENSE: "Driver's licence",
+  PASSPORT: "Passport",
 };
 
-export default async function AdminHomePage() {
-  const user = await getSessionUser();
+const SIDE_LABELS: Record<string, string> = {
+  FRONT: "Front",
+  BACK: "Back",
+  SELFIE: "Selfie with document",
+};
 
-  const [
-    newAccounts,
-    deposits,
-    withdrawals,
-    applications,
-    chats,
-    activeClients,
-    postedByCurrency,
-  ] = await Promise.all([
-    db.user.count({ where: { status: "PENDING", role: "CLIENT" } }),
-    db.transaction.count({ where: { status: "PENDING", type: "DEPOSIT" } }),
-    db.transaction.count({ where: { status: "PENDING", type: { in: ["WITHDRAWAL", "SEND"] } } }),
-    db.productApplication.count({ where: { status: "SUBMITTED" } }),
-    db.chatConversation.count({ where: { unreadForAdmin: true } }),
-    db.user.count({ where: { status: "ACTIVE", role: "CLIENT" } }),
-    // Accounts can be held in USD or EUR. Summing the two and printing one
-    // currency symbol would make the bank's headline figure meaningless, so the
-    // ledger is totalled per currency.
-    db.transaction.findMany({
-      where: { status: "POSTED" },
-      select: { amountCents: true, account: { select: { currency: true } } },
-    }),
-  ]);
+const SIDE_ORDER = ["FRONT", "BACK", "SELFIE"];
 
-  const heldByCurrency = new Map<string, number>();
-  for (const tx of postedByCurrency) {
-    const currency = tx.account.currency;
-    heldByCurrency.set(currency, (heldByCurrency.get(currency) ?? 0) + tx.amountCents);
-  }
-  // Always show something, even before the first transaction exists.
-  const held = heldByCurrency.size > 0 ? [...heldByCurrency.entries()] : [["USD", 0] as const];
+export default async function ReviewQueuePage() {
+  const pending = await db.user.findMany({
+    where: { status: "PENDING", role: "CLIENT" },
+    include: { kycDocuments: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const jobs: Job[] = [
-    {
-      count: newAccounts,
-      href: "/admin/review",
-      title: "New account requests",
-      blurb:
-        "Someone has applied to open an account and sent their ID photos. Check the photos, then approve or decline.",
-      cta: "Review them",
-    },
-    {
-      count: deposits,
-      href: "/admin/deposits",
-      title: "Money being paid in",
-      blurb:
-        "A client says they have sent money in. Confirm it arrived in the real bank account, then approve it so their balance goes up.",
-      cta: "Check deposits",
-    },
-    {
-      count: withdrawals,
-      href: "/admin/withdrawals",
-      title: "Money being taken out",
-      blurb:
-        "A client has asked to withdraw. Send the money using their payout details, then mark it approved here.",
-      cta: "Check withdrawals",
-    },
-    {
-      count: applications,
-      href: "/admin/applications",
-      title: "Card and loan requests",
-      blurb:
-        "A client has applied for a card, loan, or other product. Decide the amount and approve, or decline.",
-      cta: "Open requests",
-    },
-    {
-      count: chats,
-      href: "/admin/chat",
-      title: "Someone is waiting in live chat",
-      blurb: "A visitor or client has sent a message on the website and hasn't had a reply yet.",
-      cta: "Reply now",
-    },
-  ];
-
-  const todo = jobs.filter((j) => j.count > 0);
-  const clear = jobs.filter((j) => j.count === 0);
-  const totalJobs = todo.reduce((sum, j) => sum + j.count, 0);
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  // Documents purged after review still count as submitted, so an applicant
+  // doesn't fall back into "awaiting steps" once their files are deleted.
+  const hasDocs = (u: (typeof pending)[number]) =>
+    u.kycDocuments.length > 0 || u.kycDocsDeletedAt !== null;
+  const ready = pending.filter((u) => u.emailVerified && hasDocs(u));
+  const waiting = pending.filter((u) => !u.emailVerified || !hasDocs(u));
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-navy-900">
-        {greeting}
-        {user?.firstName ? `, ${user.firstName}` : ""}.
-      </h1>
-      <p className="mt-1 text-[15px] text-gray-600">
-        {totalJobs === 0
-          ? "Nothing is waiting for you. Everything below is up to date."
-          : `You have ${totalJobs} thing${totalJobs === 1 ? "" : "s"} to look at today.`}
+      <h1 className="text-xl font-bold text-fg">Account review queue</h1>
+      <p className="mt-1 text-sm text-fg-muted">
+        Applications with a verified email and an identity document, ready for a
+        decision.
       </p>
 
-      {/* Headline numbers */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Clients with an open account
-          </p>
-          <p className="mt-1 text-3xl font-bold text-navy-900">{activeClients}</p>
+      {ready.length === 0 ? (
+        <div className="mt-8 rounded-2xl border border-dashed border-line bg-ink-1 p-10 text-center text-sm text-fg-muted">
+          No applications ready for review.
         </div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            Total held across all client accounts
-          </p>
-          <div className="mt-1 flex flex-wrap items-baseline gap-x-5 gap-y-1">
-            {held.map(([currency, cents]) => (
-              <p key={currency} className="text-3xl font-bold text-navy-900">
-                {formatMoney(cents, "en", currency)}
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
+      ) : (
+        <div className="mt-6 space-y-4">
+          {ready.map((u) => (
+            <div key={u.id} className="rounded-2xl border border-line bg-ink-1 p-6 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="font-bold text-fg">
+                    {u.firstName} {u.lastName}
+                    <span
+                      className={`ml-2 rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                        u.accountType === "COMMERCIAL"
+                          ? "bg-navy-100 text-fg-muted"
+                          : "bg-brand-500/12 text-brand-400"
+                      }`}
+                    >
+                      {u.accountType === "COMMERCIAL" ? "Business" : "Personal"}
+                    </span>
+                  </p>
+                  <p className="text-sm text-fg-muted">{u.email}</p>
+                  <p className="text-sm text-fg-muted">{u.phone}</p>
+                  <p className="mt-1 text-xs text-fg-muted">
+                    Applied {u.createdAt.toLocaleString()} &middot;{" "}
+                    <span className="text-pos">email verified</span>
+                    {" · language: "}
+                    {u.locale.toUpperCase()}
+                  </p>
+                </div>
+                <div className="min-w-[16rem] text-sm">
+                  <p className="font-semibold text-fg-muted">
+                    Identity documents
+                    {u.kycDocuments.length > 0 && (
+                      <span className="ml-2 font-normal text-fg-faint">
+                        {DOC_LABELS[u.kycDocuments[0].docType] ?? u.kycDocuments[0].docType} ·{" "}
+                        {Math.round(
+                          u.kycDocuments.reduce((s, d) => s + d.sizeBytes, 0) / 1024
+                        )}{" "}
+                        KB total
+                      </span>
+                    )}
+                  </p>
+                  {u.kycDocuments.length === 0 ? (
+                    <p className="mt-1 text-xs text-fg-muted">
+                      {u.kycDocsDeletedAt
+                        ? `Deleted after review on ${u.kycDocsDeletedAt.toLocaleDateString()}`
+                        : "None uploaded"}
+                    </p>
+                  ) : (
+                    <>
+                      <ul className="mt-1 space-y-1">
+                        {[...u.kycDocuments]
+                          .sort(
+                            (a, b) => SIDE_ORDER.indexOf(a.side) - SIDE_ORDER.indexOf(b.side)
+                          )
+                          .map((d) => (
+                            <li key={d.id} className="flex items-center gap-2">
+                              <a
+                                href={`/api/files/kyc/${d.storedName}`}
+                                target="_blank"
+                                className="text-brand-400 hover:underline"
+                              >
+                                {SIDE_LABELS[d.side] ?? d.side}
+                              </a>
+                              <span className="text-xs text-fg-faint">
+                                {Math.round(d.sizeBytes / 1024)} KB
+                              </span>
+                              <form action={deleteKycDocumentsAction} className="ml-auto">
+                                <input type="hidden" name="userId" value={u.id} />
+                                <input type="hidden" name="docId" value={d.id} />
+                                <button
+                                  title="Delete this file permanently"
+                                  className="rounded px-1.5 text-xs font-bold text-fg-faint transition hover:bg-neg/10 hover:text-red-600"
+                                >
+                                  ✕
+                                </button>
+                              </form>
+                            </li>
+                          ))}
+                      </ul>
+                      <form action={deleteKycDocumentsAction} className="mt-2">
+                        <input type="hidden" name="userId" value={u.id} />
+                        <button className="rounded-md border border-neg/25 px-2.5 py-1 text-xs font-bold text-neg transition hover:bg-neg/10">
+                          Delete all after review
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              </div>
 
-      {/* Things to do */}
-      {todo.length > 0 && (
-        <section className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500">
-            Needs you now
-          </h2>
-          <div className="mt-4 space-y-3">
-            {todo.map((j) => (
-              <Link
-                key={j.href}
-                href={j.href}
-                className="flex items-start gap-4 rounded-2xl border border-accent-200 bg-white p-5 shadow-sm transition hover:border-accent-500 hover:shadow-md"
-              >
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent-500 text-lg font-bold text-white">
-                  {j.count}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-bold text-navy-900">{j.title}</span>
-                  <span className="mt-0.5 block text-sm leading-relaxed text-gray-600">
-                    {j.blurb}
-                  </span>
-                </span>
-                <span className="shrink-0 self-center rounded-full bg-accent-500 px-4 py-2 text-sm font-semibold text-white">
-                  {j.cta}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Already clear */}
-      {clear.length > 0 && (
-        <section className="mt-10">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500">
-            Nothing waiting here
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {clear.map((j) => (
-              <Link
-                key={j.href}
-                href={j.href}
-                className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm transition hover:border-navy-300"
-              >
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700">
-                  ✓
-                </span>
-                <span className="font-semibold text-navy-800">{j.title}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Everyday tasks that aren't a queue */}
-      <section className="mt-10">
-        <h2 className="text-sm font-bold uppercase tracking-wide text-gray-500">
-          Other things you can do
-        </h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          {[
-            {
-              href: "/admin/clients",
-              title: "Look up a client",
-              blurb: "See anyone's balance and history, or add and remove money by hand.",
-            },
-            {
-              href: "/admin/messages",
-              title: "Send a message to clients",
-              blurb: "Email everyone, or one person, from info@, support@ or accountmanager@.",
-            },
-            {
-              href: "/admin/inbox",
-              title: "Read your email",
-              blurb: "Mail sent to your three company addresses, with replies, without leaving here.",
-            },
-            {
-              href: "/admin/methods",
-              title: "Change how people pay in",
-              blurb: "Turn payment options on or off and set the account details clients send money to.",
-            },
-            {
-              href: "/admin/audit",
-              title: "See everything that has happened",
-              blurb: "A permanent record of every action taken, by staff and by clients.",
-            },
-            {
-              href: "/account",
-              title: "Change your password",
-              blurb: "Update your own sign-in details and turn on two-step sign-in.",
-            },
-          ].map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="rounded-xl border border-gray-200 bg-white p-4 transition hover:border-navy-300 hover:shadow-sm"
-            >
-              <p className="font-semibold text-navy-900">{l.title}</p>
-              <p className="mt-1 text-sm leading-relaxed text-gray-600">{l.blurb}</p>
-            </Link>
+              <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-navy-50 pt-4">
+                <form action={approveAccountAction}>
+                  <input type="hidden" name="userId" value={u.id} />
+                  <button className="rounded-md bg-green-700 px-5 py-2 text-sm font-bold text-white hover:bg-green-600">
+                    Approve account
+                  </button>
+                </form>
+                <form action={rejectAccountAction} className="flex items-end gap-2">
+                  <input type="hidden" name="userId" value={u.id} />
+                  <label className="block text-xs font-semibold text-fg-muted">
+                    Rejection reason (emailed to applicant)
+                    <input
+                      name="reason"
+                      placeholder="e.g. document unreadable"
+                      className="mt-1 block w-64 rounded-md border border-line bg-ink-2 px-3 py-2 text-sm"
+                    />
+                  </label>
+                  <button className="rounded-md border border-red-300 px-4 py-2 text-sm font-bold text-neg hover:bg-neg/10">
+                    Reject
+                  </button>
+                </form>
+              </div>
+            </div>
           ))}
         </div>
-      </section>
+      )}
+
+      {waiting.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-fg-muted">
+            Awaiting applicant steps ({waiting.length})
+          </h2>
+          <p className="mt-1 text-sm text-fg-muted">
+            These applicants signed up but haven&apos;t finished email
+            verification or document upload yet. No action needed.
+          </p>
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-ink-1 shadow-sm">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-ink-2 text-xs uppercase tracking-wide text-fg-muted">
+                <tr>
+                  <th className="px-4 py-3">Applicant</th>
+                  <th className="px-4 py-3">Signed up</th>
+                  <th className="px-4 py-3">Missing step</th>
+                </tr>
+              </thead>
+              <tbody>
+                {waiting.map((u) => (
+                  <tr key={u.id} className="border-t border-navy-50">
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-fg">
+                        {u.firstName} {u.lastName}
+                      </p>
+                      <p className="text-fg-muted">{u.email}</p>
+                    </td>
+                    <td className="px-4 py-3 text-fg-muted">
+                      {u.createdAt.toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="rounded-full bg-amber-400/12 px-2.5 py-1 text-xs font-bold text-amber-300">
+                        {!u.emailVerified ? "Email verification" : "Identity document"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

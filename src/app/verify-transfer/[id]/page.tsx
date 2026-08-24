@@ -111,7 +111,7 @@ export default async function VerifyTransferPage({
           />
         </div>
       </div>
-      <AccountManagerFooter labels={{ title: t.bank.managerTitle, body: t.bank.managerBody }} />
+      <AccountManagerFooter />
     </main>
   );
 }

@@ -91,7 +91,7 @@ export default async function PublicProductPage({
   }
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 bg-white text-[#101828]">
       <MarketingHeader />
       <PageHero eyebrow={t.productPage.eyebrow} title={item.title} body={item.body} />
 
@@ -131,13 +131,13 @@ export default async function PublicProductPage({
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
                 href="/signup"
-                className="rounded-full bg-accent-500 px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600"
+                className="rounded-xl bg-accent-500 px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600"
               >
                 {t.productPage.openCta}
               </Link>
               <Link
                 href="/login"
-                className="rounded-full border border-gray-300 px-7 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40"
+                className="rounded-xl border border-gray-300 px-7 py-3.5 text-sm font-semibold text-navy-800 transition hover:border-accent-500/40"
               >
                 {t.common.signIn}
               </Link>

@@ -7,8 +7,8 @@ import { BankCard } from "@/components/bank-card";
 import { CARD_TIERS, type FieldDef } from "@/lib/products";
 
 const inputClass =
-  "mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px] text-navy-900 transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20";
-const labelClass = "block text-[13px] font-semibold text-navy-800";
+  "mt-1.5 w-full rounded-lg border border-line bg-ink-2 px-3.5 py-2.5 text-[15px] text-fg transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25";
+const labelClass = "block text-[13px] font-semibold text-fg";
 
 const TERMS = [12, 24, 36, 60, 120, 240, 360];
 
@@ -60,7 +60,7 @@ function Field({
     return (
       <label className={labelClass}>
         {label}
-        {field.required && <span className="ml-1 text-accent-600">*</span>}
+        {field.required && <span className="ml-1 text-brand-400">*</span>}
         <select
           name={field.name}
           value={value}
@@ -99,9 +99,9 @@ function Field({
     return (
       <label className={labelClass}>
         {label}
-        {field.required && <span className="ml-1 text-accent-600">*</span>}
+        {field.required && <span className="ml-1 text-brand-400">*</span>}
         <div className="relative">
-          <span className="pointer-events-none absolute left-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[15px] text-gray-400">
+          <span className="pointer-events-none absolute left-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[15px] text-fg-faint">
             {currencySymbol}
           </span>
           <input
@@ -124,7 +124,7 @@ function Field({
   return (
     <label className={labelClass}>
       {label}
-      {field.required && <span className="ml-1 text-accent-600">*</span>}
+      {field.required && <span className="ml-1 text-brand-400">*</span>}
       <input
         name={field.name}
         type={field.kind === "number" ? "number" : "text"}
@@ -178,8 +178,8 @@ export function ApplyForm({
 
       {showTiers && (
         <fieldset>
-          <legend className="text-base font-semibold text-navy-900">{labels.chooseTier}</legend>
-          <p className="mt-1 text-sm text-gray-500">{labels.tierHint}</p>
+          <legend className="text-base font-semibold text-fg">{labels.chooseTier}</legend>
+          <p className="mt-1 text-sm text-fg-muted">{labels.tierHint}</p>
           <input type="hidden" name="requestedTier" value={tier} />
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {CARD_TIERS.map((option) => {
@@ -190,10 +190,10 @@ export function ApplyForm({
                   type="button"
                   onClick={() => setTier(option)}
                   aria-pressed={selected}
-                  className={`rounded-2xl border-2 bg-white p-3 text-left transition ${
+                  className={`rounded-2xl border-2 bg-ink-1 p-3 text-left transition ${
                     selected
                       ? "border-accent-500 shadow-md"
-                      : "border-gray-100 hover:border-gray-200"
+                      : "border-line-soft hover:border-line"
                   }`}
                 >
                   <BankCard
@@ -206,19 +206,19 @@ export function ApplyForm({
                   />
                   <div className="mt-3 px-1 pb-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-navy-900">
+                      <p className="text-sm font-semibold text-fg">
                         {labels.tiers[option] ?? option}
                       </p>
                       {selected && (
-                        <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                        <span className="rounded-full bg-brand-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
                           ✓
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-[13px] leading-snug text-gray-500">
+                    <p className="mt-1 text-[13px] leading-snug text-fg-muted">
                       {labels.tierBlurbs[option] ?? ""}
                     </p>
-                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-navy-700">
+                    <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
                       {labels.tierLimit}: {labels.tierRanges[option]}
                     </p>
                   </div>
@@ -231,14 +231,14 @@ export function ApplyForm({
 
       {hasProductSection && (
         <fieldset>
-          <legend className="text-base font-semibold text-navy-900">{labels.aboutProduct}</legend>
+          <legend className="text-base font-semibold text-fg">{labels.aboutProduct}</legend>
           <div className="mt-4 grid gap-5 sm:grid-cols-2">
             {showAmount && (
               <label className={labelClass}>
                 {labels.amount}
-                <span className="ml-1 text-accent-600">*</span>
+                <span className="ml-1 text-brand-400">*</span>
                 <div className="relative">
-                  <span className="pointer-events-none absolute left-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[15px] text-gray-400">
+                  <span className="pointer-events-none absolute left-3.5 top-1/2 mt-[3px] -translate-y-1/2 text-[15px] text-fg-faint">
                     {currencySymbol}
                   </span>
                   <input
@@ -282,8 +282,8 @@ export function ApplyForm({
       )}
 
       <fieldset>
-        <legend className="text-base font-semibold text-navy-900">{labels.aboutYou}</legend>
-        <p className="mt-1 text-sm text-gray-500">{labels.aboutYouHint}</p>
+        <legend className="text-base font-semibold text-fg">{labels.aboutYou}</legend>
+        <p className="mt-1 text-sm text-fg-muted">{labels.aboutYouHint}</p>
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
           {sharedFields.map((f) => (
             <Field
@@ -299,7 +299,7 @@ export function ApplyForm({
       </fieldset>
 
       {state?.error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
           {state.error}
         </p>
       )}
@@ -307,7 +307,7 @@ export function ApplyForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-accent-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
       >
         {pending ? labels.submitting : labels.submit}
       </button>

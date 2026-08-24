@@ -27,7 +27,7 @@ export function VerifyForm({
   return (
     <>
       <form action={action} className="mt-8 space-y-5">
-        <label className="block text-[13px] font-semibold text-navy-800">
+        <label className="block text-[13px] font-semibold text-fg">
           {labels.codeLabel}
           <input
             name="code"
@@ -37,17 +37,17 @@ export function VerifyForm({
             maxLength={6}
             required
             autoFocus
-            className="mt-1.5 w-full rounded-lg border border-gray-300 px-4 py-3 text-center font-mono text-2xl tracking-[0.4em] text-navy-900 transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
+            className="mt-1.5 w-full rounded-lg border border-line bg-ink-2 px-4 py-3 text-center font-mono text-2xl tracking-[0.4em] text-fg transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
           />
         </label>
 
         {state?.error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+          <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
             {state.error}
           </p>
         )}
         {notice && (
-          <p className="rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-800">
+          <p className="rounded-lg border border-pos/25 bg-pos/10 px-3.5 py-2.5 text-sm text-pos">
             {notice}
           </p>
         )}
@@ -55,13 +55,13 @@ export function VerifyForm({
         <button
           type="submit"
           disabled={pending}
-          className="w-full rounded-full bg-accent-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60"
+          className="w-full rounded-xl bg-brand-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
         >
           {pending ? labels.verifying : labels.verify}
         </button>
       </form>
 
-      <p className="mt-5 text-xs leading-relaxed text-gray-500">{labels.noEmailNote}</p>
+      <p className="mt-5 text-xs leading-relaxed text-fg-muted">{labels.noEmailNote}</p>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
         <button
@@ -73,12 +73,12 @@ export function VerifyForm({
               setNotice(result?.ok ?? null);
             })
           }
-          className="font-semibold text-accent-600 transition hover:text-accent-700 disabled:opacity-60"
+          className="font-semibold text-brand-400 transition hover:text-brand-400 disabled:opacity-60"
         >
           {labels.resend}
         </button>
         <form action={cancelTwoFactorAction}>
-          <button className="font-semibold text-gray-500 transition hover:text-navy-800">
+          <button className="font-semibold text-fg-muted transition hover:text-fg">
             {labels.cancel}
           </button>
         </form>

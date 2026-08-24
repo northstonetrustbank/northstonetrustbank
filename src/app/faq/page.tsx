@@ -28,7 +28,7 @@ export default async function FaqPage() {
   };
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 bg-white text-[#101828]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
@@ -73,13 +73,13 @@ export default async function FaqPage() {
               </p>
               <Link
                 href="/contact"
-                className="mt-5 block rounded-full bg-accent-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-accent-600"
+                className="mt-5 block rounded-xl bg-accent-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-accent-600"
               >
                 {t.nav.contact}
               </Link>
               <Link
                 href="/signup"
-                className="mt-3 block rounded-full border border-gray-300 bg-white py-3 text-center text-sm font-semibold text-navy-800 transition hover:border-accent-500/40"
+                className="mt-3 block rounded-xl border border-gray-300 bg-white py-3 text-center text-sm font-semibold text-navy-800 transition hover:border-accent-500/40"
               >
                 {t.common.openAccount}
               </Link>

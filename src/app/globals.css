@@ -29,60 +29,35 @@ html {
 }
 
 body {
-  background: #ffffff;
-  color: #101828;
+  background: var(--color-ink-0);
+  color: var(--color-fg);
   font-feature-settings: "cv02", "cv03", "cv04";
   -webkit-font-smoothing: antialiased;
 }
 
 /* A belt-and-braces guard against sideways panning on phones. One element a
    few pixels too wide is enough to make the whole page slide under a thumb,
-   which reads as the site being broken. Anything that genuinely needs to
-   scroll horizontally (wide tables, the ledger) does so inside its own
-   overflow-x container, so nothing legitimate is lost here. */
+   which reads as the site being broken. */
 html,
 body {
   max-width: 100%;
-  /* clip rather than hidden: hidden turns the element into a scroll container,
-     which breaks position:sticky and smooth scrolling. clip stops the sideways
-     drift without either side effect. */
   overflow-x: clip;
-  /* and no horizontal rubber-banding at the edges */
   overscroll-behavior-x: none;
 }
 
-/* A page should travel up and down under a thumb, never side to side. The rules
-   above remove horizontal *overflow*, but a stray gesture can still drag the
-   page sideways on a phone. This tells the browser that touches here pan
-   vertically only — pinch-to-zoom is deliberately kept, since people do zoom in
-   on figures and card numbers. */
+/* A page should travel up and down under a thumb, never side to side.
+   Pinch-to-zoom is deliberately kept — people do zoom in on figures. */
 body {
   touch-action: pan-y pinch-zoom;
 }
 
-/* The exception: anything that genuinely scrolls sideways — the ledger on a
-   narrow screen — gets its gestures back, or it would be unreadable. */
+/* The exception: anything that genuinely scrolls sideways gets its gestures
+   back, or it would be unreadable on a narrow screen. */
 .overflow-x-auto,
 .overflow-x-scroll,
 .overflow-auto,
 .overflow-scroll {
   touch-action: auto;
-}
-
-/* Live-chat launcher. A support button that never moves reads as decoration,
-   so the ring breathes outward on a slow cycle and the button drifts a couple
-   of pixels — enough to catch the eye without behaving like an advert. Both are
-   applied with motion-safe, so anyone who asks for reduced motion gets neither. */
-@keyframes nsPulseRing {
-  0% {
-    transform: scale(1);
-    opacity: 0.5;
-  }
-  70%,
-  100% {
-    transform: scale(1.65);
-    opacity: 0;
-  }
 }
 
 /* Chat panel opening — kept here so the widget can reference it by name. */
@@ -95,4 +70,129 @@ body {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+}
+
+/* Live-chat launcher: the ring breathes outward on a slow cycle, enough to
+   catch the eye without behaving like an advert. */
+@keyframes nsPulseRing {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+/* Money and other figures line up column-to-column instead of jittering as
+   digits change width. Applied to every balance, table amount and statement. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "cv02", "cv03", "cv04";
+}
+
+/* Horizontal rows that scroll on small screens (the balance action tiles)
+   keep the gesture but drop the bar, which no banking app shows. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Design tokens ─────────────────────────────────────────────────────────
+   A layered surface set built on the brand blue, plus the type scale,
+   elevation and motion the app draws from. Values live here so a surface
+   changes in one place rather than in forty components.
+
+   Northstone runs LIGHT. The layering is the same idea as a dark set — each
+   step is a surface sitting on the one below — it just runs from near-white
+   upward instead of from near-black. Every component reads these tokens, so
+   the whole app follows from these values alone. */
+@theme {
+  --color-ink-0: #f1f6fc; /* page ground */
+  --color-ink-1: #ffffff; /* raised card */
+  --color-ink-2: #e9f1fa; /* card on card, inputs */
+  --color-ink-3: #dbe7f5; /* hover, pressed */
+
+  --color-line: #d4e2f1; /* hairline border */
+  --color-line-soft: #e6eef8;
+
+  --color-fg: #04162c; /* primary text — the deep face of the mark */
+  --color-fg-muted: #4c6485; /* secondary text */
+  --color-fg-faint: #7c90ab; /* captions, disabled */
+
+  --color-brand-400: #4d95e4;
+  --color-brand-500: #046bd4;
+  --color-brand-600: #0357ae;
+
+  /* Rewards and bonuses — the chip gold from the card faces, darkened so it
+     still reads against a light surface. A gift never wears the same blue as
+     a balance. */
+  --color-gift: #a3761c;
+  --color-pos: #0e8a53;
+  --color-neg: #c93b30;
+}
+
+/* Elevation: a hairline plus a soft drop. On a light ground the separation
+   comes from the ring, not from the shadow doing all the work. */
+.elev-1 {
+  box-shadow:
+    0 0 0 1px rgba(4, 22, 44, 0.05),
+    0 1px 2px rgba(4, 22, 44, 0.06);
+}
+.elev-2 {
+  box-shadow:
+    0 0 0 1px rgba(4, 22, 44, 0.05),
+    0 18px 40px -20px rgba(4, 22, 44, 0.25),
+    0 2px 8px rgba(4, 22, 44, 0.06);
+}
+
+/* Display figures: tight tracking is what makes a large number look set
+   rather than merely enlarged. */
+.display {
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Content arrives rather than appearing. Staggered by an inline delay. */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise {
+  animation: riseIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
+
+/* Native controls follow the page. The class name is inherited from the
+   shared design system, where this surface is dark; on Northstone the app
+   surface is light, so it declares light and the dark-only corrections
+   (inverted picker icons, repainted dropdowns) are not needed. */
+.scheme-dark {
+  color-scheme: light;
+}
+
+/* Autofill paints its own yellow-white unless it is told otherwise. */
+.scheme-dark input:-webkit-autofill,
+.scheme-dark input:-webkit-autofill:hover,
+.scheme-dark input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-fg);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-ink-1) inset;
+  caret-color: var(--color-fg);
 }

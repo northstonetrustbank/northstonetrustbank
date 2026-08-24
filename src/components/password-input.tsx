@@ -31,7 +31,7 @@ export function PasswordInput({
         type="button"
         onClick={() => setShow((v) => !v)}
         aria-label={show ? "Hide" : "Show"}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-navy-700"
+        className="absolute inset-y-0 right-0 flex items-center px-3 text-fg-faint hover:text-fg-muted"
       >
         {show ? (
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">

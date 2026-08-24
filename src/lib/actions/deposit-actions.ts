@@ -14,8 +14,8 @@ import {
   pendingWithdrawalCents,
 } from "@/lib/bank";
 import { sendDepositReceivedEmail } from "@/lib/email";
-import { newVatCode } from "@/lib/vat";
 import { uploadFile, DEPOSIT_BUCKET } from "@/lib/storage";
+import { newVatCode } from "@/lib/vat";
 import { methodDef } from "@/lib/methods";
 import { getDict } from "@/i18n/server";
 import type { FormState } from "./auth-actions";
@@ -57,19 +57,14 @@ export async function submitDepositAction(
     }
     const ext = path.extname(file.name).toLowerCase() || ".bin";
     const storedName = `${randomBytes(16).toString("hex")}${ext}`;
-    try {
-      await uploadFile(DEPOSIT_BUCKET, storedName, Buffer.from(await file.arrayBuffer()), file.type);
-    } catch {
-      // Without this the deposit is silently dropped and the form just resets.
-      return { error: t.errors.uploadFailed };
-    }
+    await uploadFile(DEPOSIT_BUCKET, storedName, Buffer.from(await file.arrayBuffer()), file.type);
     proof = { fileName: file.name, storedName, mimeType: file.type };
   }
 
   const account = await ensureAccount(user.id);
   const reference = newReference("D");
 
-  await db.transaction.create({
+  const created = await db.transaction.create({
     data: {
       accountId: account.id,
       type: "DEPOSIT",
@@ -101,7 +96,9 @@ export async function submitDepositAction(
     reference
   );
 
-  redirect("/dashboard?submitted=1");
+  // The transaction's own page is the receipt — better than a banner on a
+  // dashboard the client then has to search.
+  redirect(`/activity/${created.id}?new=1`);
 }
 
 export async function submitWithdrawalAction(
@@ -142,9 +139,6 @@ export async function submitWithdrawalAction(
   }
 
   const reference = newReference("W");
-  // Held at the VAT gate rather than going straight to the admin queue. The row
-  // is still PENDING, so the amount is reserved against the available balance
-  // from this moment — see pendingWithdrawalCents.
   const created = await db.transaction.create({
     data: {
       accountId: account.id,
@@ -154,6 +148,9 @@ export async function submitWithdrawalAction(
       reference,
       methodKey,
       counterparty: details,
+      // Held at the VAT gate rather than going straight to the admin queue.
+      // The row is still PENDING, so the amount is reserved against the
+      // available balance from this moment — see pendingWithdrawalCents.
       vatCode: newVatCode(),
       vatRequiredAt: new Date(),
     },
@@ -165,7 +162,7 @@ export async function submitWithdrawalAction(
     action: "WITHDRAWAL_REQUESTED",
     targetType: "TRANSACTION",
     targetId: reference,
-    details: `${user.email} requested a ${methodDef(methodKey).label} withdrawal of ${formatMoney(amountCents)} (${reference}) — held for VAT clearance`,
+    details: `${user.email} requested a ${methodDef(methodKey).label} withdrawal of ${formatMoney(amountCents)} (${reference})`,
   });
 
   redirect(`/verify-transfer/${created.id}`);

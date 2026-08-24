@@ -34,13 +34,13 @@ export async function MarketingHeader() {
           <LanguageSwitcher current={locale} variant="dark" />
           <Link
             href="/login"
-            className="hidden rounded-full px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:block"
+            className="hidden rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10 sm:block"
           >
             {t.common.signIn}
           </Link>
           <Link
             href="/signup"
-            className="rounded-full bg-accent-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600"
+            className="rounded-xl bg-accent-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600"
           >
             {t.common.openAccount}
           </Link>

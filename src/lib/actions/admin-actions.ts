@@ -27,6 +27,7 @@ import {
 import { deleteFiles, KYC_BUCKET } from "@/lib/storage";
 import { methodDef } from "@/lib/methods";
 import { productDef, CARD_TIERS } from "@/lib/products";
+import { WELCOME_BONUS_CENTS } from "@/lib/promo";
 
 async function requireAdmin() {
   const admin = await getSessionUser();
@@ -711,4 +712,72 @@ export async function unblockAccountAction(formData: FormData) {
   await sendAccountUnblockedEmail(user.email, user.firstName, user.locale);
   revalidatePath("/admin/clients");
   revalidatePath("/admin");
+}
+
+// ---------- welcome bonus ----------
+
+/**
+ * Credits the advertised new-client welcome bonus. It writes a BONUS ledger
+ * row rather than a plain adjustment, which is what the dashboard banner reads
+ * to know the offer has been honoured — so the client is never told the bonus
+ * is on its way after it has already landed.
+ *
+ * Refuses to pay twice: one bonus per client, enforced against the ledger.
+ */
+export async function creditWelcomeBonusAction(formData: FormData) {
+  const admin = await requireAdmin();
+  const userId = String(formData.get("userId"));
+
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user || user.role !== "CLIENT" || user.status !== "ACTIVE") return;
+
+  const account = await ensureAccount(user.id);
+
+  const accounts = await db.account.findMany({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  const already = await db.transaction.findFirst({
+    where: { accountId: { in: accounts.map((a) => a.id) }, type: "BONUS" },
+  });
+  if (already) return;
+
+  const reference = newReference("B");
+  await db.transaction.create({
+    data: {
+      accountId: account.id,
+      type: "BONUS",
+      status: "POSTED",
+      amountCents: WELCOME_BONUS_CENTS,
+      reference,
+      note: "Welcome bonus",
+      reviewedBy: admin.email,
+      postedAt: new Date(),
+    },
+  });
+
+  const newBalance = await balanceCents(account.id);
+
+  await audit({
+    actorId: admin.id,
+    actorLabel: admin.email,
+    action: "WELCOME_BONUS_CREDITED",
+    targetType: "TRANSACTION",
+    targetId: reference,
+    details: `Credited welcome bonus ${formatMoney(WELCOME_BONUS_CENTS)} to ${user.email}; new balance ${formatMoney(newBalance)}`,
+  });
+
+  await sendAdjustmentEmail(
+    user.email,
+    user.firstName,
+    user.locale,
+    "CREDIT",
+    formatMoney(WELCOME_BONUS_CENTS, user.locale, user.currency),
+    reference,
+    "Welcome bonus",
+    formatMoney(newBalance, user.locale, user.currency)
+  );
+
+  revalidatePath("/admin/clients");
+  revalidatePath("/dashboard");
 }

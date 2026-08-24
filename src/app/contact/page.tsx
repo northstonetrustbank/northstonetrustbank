@@ -15,7 +15,7 @@ export default async function ContactPage() {
   const t = await getDict();
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 bg-white text-[#101828]">
       <MarketingHeader />
       <PageHero eyebrow={t.contactPage.eyebrow} title={t.contactPage.title} body={t.contactPage.body} />
 
@@ -88,7 +88,7 @@ export default async function ContactPage() {
               </p>
               <Link
                 href="/login"
-                className="mt-4 block rounded-full border border-gray-300 py-2.5 text-center text-sm font-semibold text-navy-800 transition hover:border-accent-500/40"
+                className="mt-4 block rounded-xl border border-gray-300 py-2.5 text-center text-sm font-semibold text-navy-800 transition hover:border-accent-500/40"
               >
                 {t.contactPage.signedInCta}
               </Link>

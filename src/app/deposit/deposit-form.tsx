@@ -6,9 +6,9 @@ import type { FormState } from "@/lib/actions/auth-actions";
 import { FileField } from "@/components/file-field";
 
 const inputClass =
-  "mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px] text-navy-900 placeholder:text-gray-400 transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20";
+  "mt-1.5 w-full rounded-lg border border-line bg-ink-2 px-3.5 py-2.5 text-[15px] text-fg placeholder:text-fg-faint transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25";
 
-const labelClass = "block text-[13px] font-semibold text-navy-800";
+const labelClass = "block text-[13px] font-semibold text-fg";
 
 type Labels = {
   amount: string;
@@ -63,11 +63,11 @@ export function DepositForm({ methodKey, labels }: { methodKey: string; labels: 
           tooBigLabel={labels.fileTooBig}
           required={false}
         />
-        <span className="mt-1.5 block text-xs font-normal text-gray-500">{labels.proofHint}</span>
+        <span className="mt-1.5 block text-xs font-normal text-fg-muted">{labels.proofHint}</span>
       </div>
 
       {state?.error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
           {state.error}
         </p>
       )}
@@ -75,7 +75,7 @@ export function DepositForm({ methodKey, labels }: { methodKey: string; labels: 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-accent-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
       >
         {pending ? labels.submitting : labels.submit}
       </button>

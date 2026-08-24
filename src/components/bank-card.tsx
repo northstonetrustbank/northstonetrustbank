@@ -17,19 +17,19 @@ type Face = {
   edge: string;
 };
 
-// Built on the brand palette in globals.css — navy-800 #062A52, navy-900
-// #04162C, navy-950 #020D1C, accent-500 #046BD4 — so the cards belong to the
+// Built on the brand palette in globals.css — navy-800 #0a1f3d, navy-900
+// #061530, navy-950 #030c1f, accent-500 #2f6fed — so the cards belong to the
 // same system as the rest of the site rather than approximating it.
 const FACES: Record<CardTheme, Face> = {
   BLUE: {
     background:
-      "radial-gradient(120% 140% at 78% 8%, rgba(4,107,212,0.42) 0%, rgba(4,107,212,0) 58%)," +
-      "linear-gradient(146deg,#0F4383 0%,#062A52 46%,#04162C 78%,#020D1C 100%)",
-    ink: "#EFF5FC",
-    inkSoft: "#8BB4E4",
+      "radial-gradient(120% 140% at 78% 8%, rgba(47,111,237,0.42) 0%, rgba(47,111,237,0) 58%)," +
+      "linear-gradient(146deg,#173763 0%,#0a1f3d 46%,#061530 78%,#030c1f 100%)",
+    ink: "#F2F5FA",
+    inkSoft: "#94A8C9",
     chip: "#E4C56B",
     chipLine: "#B9973A",
-    ring: "#046BD4",
+    ring: "#2F6FED",
     sheen: "linear-gradient(112deg,transparent 26%,rgba(255,255,255,0.10) 44%,rgba(255,255,255,0.02) 52%,transparent 62%)",
     edge: "inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.45)",
   },
@@ -77,6 +77,24 @@ const STATUS_TONES = {
 } as const;
 
 /** Groups a card number into 4s; masks all but the last four when asked. */
+/**
+ * A card face shrunk to a thumbnail — same gradient, sheen and lit edge as the
+ * full card, with none of the detail that would turn to mush at 88px wide.
+ * Used where a product needs to be recognisable in a list rather than admired.
+ */
+export function CardSwatch({ theme, className = "" }: { theme: CardTheme; className?: string }) {
+  const face = FACES[theme];
+  return (
+    <span
+      aria-hidden="true"
+      className={`block h-full w-full ${className}`}
+      style={{ background: face.background, boxShadow: face.edge }}
+    >
+      <span className="block h-full w-full" style={{ background: face.sheen }} />
+    </span>
+  );
+}
+
 export function formatCardNumber(number?: string | null, masked = false) {
   const digits = (number ?? "").replace(/\D/g, "");
   if (digits.length < 4) return "••••  ••••  ••••  ••••";
@@ -124,15 +142,14 @@ export function BankCard({
   const face = FACES[theme] ?? FACES.BLUE;
 
   return (
-    // A real card's details are proportional to the card, and this one has a
-    // fixed aspect ratio — so sizing the contents in pixels meant that once the
-    // card got narrow (a tier picker, a two-up grid) the height shrank while the
-    // text did not, and the bottom row was clipped by overflow-hidden. Everything
-    // inside is now expressed in cqw — percentages of the card's own width — so
-    // the face is identical at any size.
     <div
       className={`relative aspect-[1.586/1] w-full overflow-hidden rounded-2xl shadow-lg shadow-navy-900/20 ${className}`}
-      style={{ background: face.background, containerType: "inline-size" }}
+      style={{
+        background: face.background,
+        // 1cqw = 1% of this card's width, so the face scales as one piece and
+        // never depends on the browser's font size.
+        containerType: "inline-size",
+      }}
     >
       {/* decorative arcs */}
       <div
@@ -152,110 +169,123 @@ export function BankCard({
         style={{ boxShadow: face.edge }}
       />
 
-      {/* The padding lives here, not on the card. An element that declares
-          container-type cannot resolve its OWN cqw units — those fall back to the
-          viewport — so padding set on the card came out identical (and far too
-          large) at every card size, squeezing the cardholder name out of view.
-          This div is a child of the container, so its cqw resolves correctly. */}
+      {/* A card is fixed geometry, not a stack. Each detail is pinned to its
+          own place on the face in percentages of the card, so growing the type
+          can never push the holder's name off the bottom edge — which is
+          exactly what a flex column with justify-between did. */}
+
+      {/* Brand, and the tier opposite it */}
       <div
-        className="relative flex h-full flex-col justify-between"
-        style={{ padding: "7.3cqw" }}
+        className="absolute flex items-start justify-between gap-3"
+        style={{ top: "8.5%", left: "6%", right: "6%" }}
       >
-        <div className="flex items-start justify-between" style={{ gap: "4.4cqw" }}>
-          <div>
-            <p
-              className="font-semibold uppercase tracking-[0.2em]"
-              style={{ color: face.ink, fontSize: "4.8cqw", lineHeight: 1.15 }}
-            >
-              Northstone
-            </p>
-            <p
-              className="font-medium uppercase tracking-[0.32em]"
-              style={{ color: face.inkSoft, fontSize: "2.9cqw", lineHeight: 1.3, marginTop: "0.5cqw" }}
-            >
-              Trust Bank
-            </p>
-          </div>
-          {badge && (
-            <span
-              className="font-semibold uppercase tracking-[0.2em]"
-              style={{ color: face.ink, fontSize: "3.7cqw", lineHeight: 1.2 }}
-            >
-              {badge}
-            </span>
-          )}
+        <div className="min-w-0">
+          <p
+            className="font-semibold uppercase tracking-[0.2em]"
+            style={{ color: face.ink, fontSize: "3.9cqw", lineHeight: 1.2 }}
+          >
+            Northstone
+          </p>
+          <p
+            className="mt-0.5 font-medium uppercase tracking-[0.32em]"
+            style={{ color: face.inkSoft, fontSize: "2.9cqw", lineHeight: 1.2 }}
+          >
+            Financial Group
+          </p>
         </div>
+        {badge && (
+          <span
+            className="shrink-0 font-semibold uppercase tracking-[0.2em]"
+            style={{ color: face.ink, fontSize: "2.9cqw", lineHeight: 1.2 }}
+          >
+            {badge}
+          </span>
+        )}
+      </div>
 
-        <div className="flex items-center" style={{ gap: "4.4cqw" }}>
-          {/* chip — flat gold reads as plastic, so it gets a lit top half,
-              a shaded lower half and proper contact pads */}
-          <svg style={{ width: "14cqw", height: "10.7cqw" }} viewBox="0 0 38 29" aria-hidden="true">
-            <rect width="38" height="29" rx="5" fill={face.chip} />
-            <path d="M0 14.5 H38 V24 a5 5 0 0 1 -5 5 H5 a5 5 0 0 1 -5 -5 Z" fill="#000" opacity="0.14" />
-            <rect x="0.5" y="0.5" width="37" height="28" rx="4.5" fill="none" stroke="#FFF" strokeOpacity="0.5" />
-            <g stroke={face.chipLine} strokeWidth="1.1" fill="none" opacity="0.85">
-              <path d="M0 14.5 H38" />
-              <path d="M13 0 V29" />
-              <path d="M25 0 V29" />
-              <path d="M13 7 H0 M25 7 H38 M13 22 H0 M25 22 H38" />
-            </g>
-          </svg>
-          {/* contactless */}
-          <svg style={{ width: "6.6cqw", height: "8.1cqw" }} viewBox="0 0 18 22" aria-hidden="true">
-            <path
-              d="M3 7 a9 9 0 0 1 0 8 M8 4 a14 14 0 0 1 0 14"
-              fill="none"
-              stroke={face.inkSoft}
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
+      {/* Chip and contactless, where they sit on a real card */}
+      <div className="absolute flex items-center gap-3" style={{ top: "34%", left: "6%" }}>
+        {/* flat gold reads as plastic, so the chip gets a lit top half, a
+            shaded lower half and proper contact pads */}
+        <svg viewBox="0 0 38 29" aria-hidden="true" style={{ width: "8.8cqw", height: "6.7cqw" }}>
+          <rect width="38" height="29" rx="5" fill={face.chip} />
+          <path d="M0 14.5 H38 V24 a5 5 0 0 1 -5 5 H5 a5 5 0 0 1 -5 -5 Z" fill="#000" opacity="0.14" />
+          <rect x="0.5" y="0.5" width="37" height="28" rx="4.5" fill="none" stroke="#FFF" strokeOpacity="0.5" />
+          <g stroke={face.chipLine} strokeWidth="1.1" fill="none" opacity="0.85">
+            <path d="M0 14.5 H38" />
+            <path d="M13 0 V29" />
+            <path d="M25 0 V29" />
+            <path d="M13 7 H0 M25 7 H38 M13 22 H0 M25 22 H38" />
+          </g>
+        </svg>
+        <svg viewBox="0 0 18 22" aria-hidden="true" style={{ width: "4.1cqw", height: "5.1cqw" }}>
+          <path
+            d="M3 7 a9 9 0 0 1 0 8 M8 4 a14 14 0 0 1 0 14"
+            fill="none"
+            stroke={face.inkSoft}
+            strokeWidth="1.6"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
 
+      {/* The number */}
+      <p
+        className="absolute truncate font-mono tracking-[0.1em]"
+        style={{
+          top: "58%",
+          left: "6%",
+          right: "6%",
+          color: face.ink,
+          fontSize: "5cqw",
+          lineHeight: 1.3,
+        }}
+      >
+        {placeholder ? "\u2022\u2022\u2022\u2022  \u2022\u2022\u2022\u2022  \u2022\u2022\u2022\u2022  \u2022\u2022\u2022\u2022" : formatCardNumber(number, masked)}
+      </p>
+
+      {/* Holder, and what the card is */}
+      <div className="absolute min-w-0" style={{ bottom: "9%", left: "6%", maxWidth: "50%" }}>
         <p
-          className="font-mono tracking-[0.1em]"
-          style={{ color: face.ink, fontSize: "5.6cqw", lineHeight: 1.25, minHeight: "1.25em" }}
+          className="truncate font-semibold uppercase tracking-[0.16em]"
+          style={{ color: face.ink, fontSize: "3.7cqw", lineHeight: 1.25 }}
         >
-          {placeholder ? "••••  ••••  ••••  ••••" : formatCardNumber(number, masked)}
+          {holder || holderPlaceholder}
         </p>
+        <p
+          className="mt-0.5 truncate uppercase tracking-[0.16em]"
+          style={{ color: face.inkSoft, fontSize: "3cqw", lineHeight: 1.25 }}
+        >
+          {expiry ? `Valid thru ${expiry}` : productName}
+        </p>
+      </div>
 
-        <div className="flex items-end justify-between" style={{ gap: "4.4cqw" }}>
-          <div className="min-w-0">
-            <p
-              className="truncate font-semibold uppercase tracking-[0.16em]"
-              style={{ color: face.ink, fontSize: "3.7cqw", lineHeight: 1.25 }}
-            >
-              {holder || holderPlaceholder}
-            </p>
+      {/* The figure, opposite the holder */}
+      {value && (
+        <div
+          className="absolute min-w-0 text-right"
+          style={{ bottom: "9%", right: "6%", maxWidth: "36%" }}
+        >
+          {valueLabel && (
             <p
               className="truncate uppercase tracking-[0.16em]"
-              style={{ color: face.inkSoft, fontSize: "3.3cqw", lineHeight: 1.3, marginTop: "0.5cqw" }}
+              style={{ color: face.inkSoft, fontSize: "2.5cqw", lineHeight: 1.25 }}
             >
-              {expiry ? `Valid thru ${expiry}` : productName}
+              {valueLabel}
             </p>
-          </div>
-          {value ? (
-            <div className="shrink-0 text-right">
-              {valueLabel && (
-                <p
-                  className="uppercase tracking-[0.16em]"
-                  style={{ color: face.inkSoft, fontSize: "2.9cqw", lineHeight: 1.3 }}
-                >
-                  {valueLabel}
-                </p>
-              )}
-              <p className="font-semibold" style={{ color: face.ink, fontSize: "5.1cqw", lineHeight: 1.25 }}>
-                {value}
-              </p>
-            </div>
-          ) : null}
+          )}
+          <p
+            className="tnum truncate font-semibold"
+            style={{ color: face.ink, fontSize: "4.2cqw", lineHeight: 1.25 }}
+          >
+            {value}
+          </p>
         </div>
-      </div>
+      )}
 
       {status && (
         <span
-          className={`absolute top-1/2 -translate-y-1/2 rounded-full font-bold uppercase tracking-wide ${STATUS_TONES[status.tone]}`}
-          style={{ right: "5.5cqw", fontSize: "3.4cqw", padding: "1.2cqw 3cqw", lineHeight: 1.2 }}
+          className={`absolute right-4 top-1/2 -translate-y-1/2 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${STATUS_TONES[status.tone]}`}
         >
           {status.label}
         </span>

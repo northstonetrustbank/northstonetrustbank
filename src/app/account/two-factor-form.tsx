@@ -25,43 +25,43 @@ export function TwoFactorForm({
   const [state, action, pending] = useActionState<FormState, FormData>(toggleTwoFactorAction, null);
 
   return (
-    <div className="mt-8 border-t border-gray-100 pt-8">
+    <div className="mt-8 border-t border-line-soft pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-[15px] font-semibold text-navy-900">{labels.title}</h3>
+        <h3 className="text-[15px] font-semibold text-fg">{labels.title}</h3>
         <span
           className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${
-            enabled ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-600"
+            enabled ? "bg-pos/12 text-pos" : "bg-ink-2 text-fg-muted"
           }`}
         >
           {enabled ? labels.statusOn : labels.statusOff}
         </span>
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-gray-600">{labels.desc}</p>
+      <p className="mt-2 text-sm leading-relaxed text-fg-muted">{labels.desc}</p>
       {enabled && labels.onSince && (
-        <p className="mt-1 text-xs text-gray-500">{labels.onSince}</p>
+        <p className="mt-1 text-xs text-fg-muted">{labels.onSince}</p>
       )}
       {!enabled && (
-        <p className="mt-2 text-sm font-medium text-accent-700">{labels.recommendation}</p>
+        <p className="mt-2 text-sm font-medium text-brand-400">{labels.recommendation}</p>
       )}
 
       <form action={action} className="mt-5 space-y-4">
-        <label className="block text-[13px] font-semibold text-navy-800">
+        <label className="block text-[13px] font-semibold text-fg">
           {labels.confirmWithPassword}
           <PasswordInput
             name="password"
             required
             autoComplete="current-password"
-            className="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px] text-navy-900 transition focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
+            className="mt-1.5 w-full rounded-lg border border-line bg-ink-2 px-3.5 py-2.5 text-[15px] text-fg transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
           />
         </label>
 
         {state?.error && (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+          <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
             {state.error}
           </p>
         )}
         {state?.ok && (
-          <p className="rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-800">
+          <p className="rounded-lg border border-pos/25 bg-pos/10 px-3.5 py-2.5 text-sm text-pos">
             {state.ok}
           </p>
         )}
@@ -69,8 +69,8 @@ export function TwoFactorForm({
         <button
           type="submit"
           disabled={pending}
-          className={`w-full rounded-full py-3 text-sm font-semibold text-white transition disabled:opacity-60 ${
-            enabled ? "bg-navy-800 hover:bg-navy-700" : "bg-accent-500 hover:bg-accent-600"
+          className={`w-full rounded-xl py-3 text-sm font-semibold text-white transition disabled:opacity-60 ${
+            enabled ? "bg-brand-500 hover:bg-brand-400" : "bg-brand-500 hover:bg-brand-400"
           }`}
         >
           {enabled ? labels.disable : labels.enable}

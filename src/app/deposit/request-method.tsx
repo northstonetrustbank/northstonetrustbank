@@ -12,7 +12,7 @@ export function RequestMethod({
 
   if (sent) {
     return (
-      <p className="mt-6 rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-700">
+      <p className="mt-6 rounded-lg border border-pos/25 bg-pos/10 px-3.5 py-2.5 text-sm text-pos">
         {labels.sent}
       </p>
     );
@@ -24,17 +24,17 @@ export function RequestMethod({
         await requestMethodAction(fd);
         setSent(true);
       }}
-      className="mt-6 border-t border-gray-100 pt-5"
+      className="mt-6 border-t border-line-soft pt-5"
     >
-      <p className="text-[13px] font-semibold text-navy-800">{labels.prompt}</p>
+      <p className="text-[13px] font-semibold text-fg">{labels.prompt}</p>
       <div className="mt-2 flex gap-2">
         <input
           name="wanted"
           required
           placeholder={labels.placeholder}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
+          className="flex-1 rounded-lg border border-line bg-ink-2 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
         />
-        <button className="rounded-full bg-navy-800 px-4 py-2 text-sm font-semibold text-white transition hover:bg-navy-700">
+        <button className="shrink-0 whitespace-nowrap rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-400">
           {labels.send}
         </button>
       </div>

@@ -22,7 +22,7 @@ export default async function HomePage() {
   const t = await getDict();
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 bg-white text-[#101828]">
       <MarketingHeader />
 
       {/* Hero */}
@@ -43,13 +43,13 @@ export default async function HomePage() {
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link
                 href="/signup"
-                className="rounded-full bg-accent-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-accent-700/30 transition hover:bg-accent-600"
+                className="rounded-xl bg-accent-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-accent-700/30 transition hover:bg-accent-600"
               >
                 {t.common.openAccount}
               </Link>
               <Link
                 href="/login"
-                className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="rounded-xl border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 {t.common.signIn}
               </Link>
@@ -73,7 +73,7 @@ export default async function HomePage() {
             </p>
             <Link
               href="/signup"
-              className="mt-7 inline-block rounded-full bg-navy-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-navy-800"
+              className="mt-7 inline-block rounded-xl bg-navy-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-navy-800"
             >
               {t.landing.getStarted}
             </Link>
@@ -119,7 +119,7 @@ export default async function HomePage() {
             </div>
             <Link
               href="/signup"
-              className="rounded-full bg-accent-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-600"
+              className="rounded-xl bg-accent-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-accent-600"
             >
               {t.landing.getStarted}
             </Link>
@@ -217,7 +217,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-7xl px-6 py-24">
         <div className="grid items-center gap-14 lg:grid-cols-2">
           <div className="relative h-[380px] overflow-hidden rounded-3xl">
-            <Image src="/images/forensic.jpg" alt="Northstone forensic investigation team" fill className="object-cover" />
+            <Image src="/images/forensic.webp" alt="Northstone forensic investigation team" fill className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-navy-950/50 to-transparent" />
           </div>
           <div>
@@ -269,7 +269,7 @@ export default async function HomePage() {
             <p className="text-xs text-white/70">{t.landing.bonusTerms}</p>
             <Link
               href="/signup"
-              className="rounded-full bg-white px-8 py-4 text-sm font-semibold text-navy-900 shadow-lg transition hover:bg-navy-50"
+              className="rounded-xl bg-white px-8 py-4 text-sm font-semibold text-navy-900 shadow-lg transition hover:bg-navy-50"
             >
               {t.common.openAccount}
             </Link>
@@ -314,12 +314,12 @@ export default async function HomePage() {
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
-              { img: "anthony", name: "Anthony Morgan", handle: "@amorgan", quote: "Northstone approved our expansion loan in days, not weeks. The rate beat every other offer we had, and the same manager stayed with us from application to drawdown." },
-              { img: "laura", name: "Laura Mitchell", handle: "@lauram", quote: "I refinanced my mortgage with Northstone and my monthly payment dropped straight away. They handled the paperwork and told me exactly what was happening at each stage." },
-              { img: "grace", name: "Grace Mitchell", handle: "@gracemitchell", quote: "Their forensic team flagged a payment I hadn't authorised before I'd even noticed it, froze the card, and walked me through the whole investigation. That's why I stay." },
-              { img: "daniel", name: "Daniel Cooper", handle: "@dcooper", quote: "Opening the account took a few minutes and the identity check was done the next morning. Transfers between my checking and savings land instantly." },
-              { img: "olivia", name: "Olivia Harris", handle: "@oliviah", quote: "Every statement reconciles to the penny and I can trace any figure back to the transaction behind it. After years of guessing with my old bank, that's a relief." },
-              { img: "benjamin", name: "Benjamin Turner", handle: "@bturner", quote: "We moved our company accounts across last quarter. Payments go out on time, the business tools are straightforward, and someone answers when we call." },
+              { img: "christopher", name: "Christopher Walker", handle: "@cwalker", quote: "I compared loan offers from several banks before choosing Northstone — their rate was easily the most competitive, and the funds arrived far faster than I expected." },
+              { img: "rachel", name: "Rachel Thompson", handle: "@rachelth", quote: "Buying our first home felt overwhelming until Northstone. Their mortgage specialists explained every step, secured us an excellent fixed rate, and finished ahead of schedule." },
+              { img: "michael", name: "Michael Anderson", handle: "@manderson", quote: "Their Forensic Financial Investigation Unit reviewed a suspicious transaction the same day, secured my account, and I was back to banking without any hassle." },
+              { img: "sophia", name: "Sophia Bennett", handle: "@sophiab", quote: "What impressed me most is how fast everything happens. Deposits are smooth and withdrawals reach my account almost instantly — speed and security together." },
+              { img: "natalie", name: "Natalie Foster", handle: "@natalief", quote: "Northstone detected an attempted fraudulent login while I was overseas, verified my identity, and restored full access quickly. Outstanding service." },
+              { img: "emily", name: "Emily Carter", handle: "@emilycarter", quote: "Every withdrawal I've made has been processed within minutes, and whenever I have a question, someone knowledgeable is always available to help." },
             ].map((r) => (
               <figure key={r.img} className="flex flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div className="text-sm text-accent-500">★★★★★</div>
@@ -349,7 +349,7 @@ export default async function HomePage() {
           </h2>
           <Link
             href="/signup"
-            className="rounded-full bg-accent-500 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-accent-700/30 transition hover:bg-accent-600"
+            className="rounded-xl bg-accent-500 px-8 py-4 text-sm font-semibold text-white shadow-lg shadow-accent-700/30 transition hover:bg-accent-600"
           >
             {t.common.openAccount}
           </Link>

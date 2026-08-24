@@ -49,14 +49,14 @@ export function AdminChatConsole({ conversationId }: { conversationId: string })
 
   return (
     <>
-      <div ref={scrollRef} className="h-[52vh] space-y-3 overflow-y-auto bg-navy-50/40 p-4">
+      <div ref={scrollRef} className="h-[52vh] space-y-3 overflow-y-auto bg-ink-2/40 p-4">
         {messages.map((m, i) => (
           <div key={i} className={m.sender === "ADMIN" ? "flex justify-end" : "flex justify-start"}>
             <div
               className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed ${
                 m.sender === "ADMIN"
-                  ? "rounded-br-sm bg-navy-800 text-white"
-                  : "rounded-bl-sm border border-gray-200 bg-white text-navy-900"
+                  ? "rounded-br-sm bg-brand-500 text-white"
+                  : "rounded-bl-sm border border-line bg-ink-1 text-fg"
               }`}
             >
               <p className="whitespace-pre-line">{m.body}</p>
@@ -64,14 +64,14 @@ export function AdminChatConsole({ conversationId }: { conversationId: string })
           </div>
         ))}
       </div>
-      <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-gray-100 p-3">
+      <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-line-soft p-3">
         <input
           name="body"
           autoComplete="off"
           placeholder="Type your reply…"
-          className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20"
+          className="flex-1 rounded-xl border border-line bg-ink-2 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
         />
-        <button className="rounded-full bg-navy-800 px-5 py-2 text-sm font-bold text-white transition hover:bg-navy-700">
+        <button className="rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white transition hover:bg-brand-400">
           Send
         </button>
       </form>

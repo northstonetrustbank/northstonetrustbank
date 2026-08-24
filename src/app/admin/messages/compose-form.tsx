@@ -5,8 +5,8 @@ import { sendBroadcastAction } from "@/lib/actions/broadcast-actions";
 import type { FormState } from "@/lib/actions/auth-actions";
 
 const inputClass =
-  "mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-navy-900 focus:border-accent-500 focus:outline-none focus:ring-2 focus:ring-accent-500/20";
-const labelClass = "block text-[13px] font-semibold text-navy-800";
+  "mt-1.5 w-full rounded-lg border border-line bg-ink-2 px-3.5 py-2.5 text-sm text-fg focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25";
+const labelClass = "block text-[13px] font-semibold text-fg";
 
 export function ComposeForm({
   clients,
@@ -20,11 +20,11 @@ export function ComposeForm({
   const [audience, setAudience] = useState("ALL");
 
   return (
-    <form action={formAction} className="mt-6 space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <form action={formAction} className="mt-6 space-y-5 rounded-2xl border border-line bg-ink-1 p-6 shadow-sm">
       {/* Channels */}
       <div>
         <p className={labelClass}>Channels</p>
-        <div className="mt-2 flex flex-wrap gap-5 text-sm text-navy-800">
+        <div className="mt-2 flex flex-wrap gap-5 text-sm text-fg">
           <label className="flex items-center gap-2">
             <input type="checkbox" name="channelEmail" defaultChecked className="h-4 w-4" />
             Email
@@ -104,12 +104,12 @@ export function ComposeForm({
       </label>
 
       {state?.error && (
-        <p className="rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg border border-neg/25 bg-neg/10 px-3.5 py-2.5 text-sm text-neg">
           {state.error}
         </p>
       )}
       {state?.ok && (
-        <p className="rounded-lg border border-green-200 bg-green-50 px-3.5 py-2.5 text-sm text-green-700">
+        <p className="rounded-lg border border-pos/25 bg-pos/10 px-3.5 py-2.5 text-sm text-pos">
           {state.ok}
         </p>
       )}
@@ -117,7 +117,7 @@ export function ComposeForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-full bg-navy-800 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-navy-700 disabled:opacity-60"
+        className="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-bold text-white transition hover:bg-brand-400 disabled:opacity-60"
       >
         {pending ? "Sending…" : "Send message"}
       </button>

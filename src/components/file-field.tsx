@@ -121,7 +121,7 @@ export function FileField({
 
   return (
     <div>
-      <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-dashed border-gray-300 px-3.5 py-3 transition hover:border-accent-500/50">
+      <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-dashed border-line bg-ink-2 px-3.5 py-3 transition hover:border-accent-500/50">
         <input
           ref={inputRef}
           type="file"
@@ -135,15 +135,15 @@ export function FileField({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="shrink-0 rounded-md bg-navy-50 px-4 py-2 text-[13px] font-semibold text-navy-800 transition hover:bg-navy-100"
+          className="shrink-0 rounded-md bg-ink-2 px-4 py-2 text-[13px] font-semibold text-fg transition hover:bg-ink-3"
         >
           {chooseLabel}
         </button>
-        <span className="truncate text-sm text-gray-600">
+        <span className="truncate text-sm text-fg-muted">
           {busy ? optimisingLabel : (fileName ?? emptyLabel)}
         </span>
         {!busy && size !== null && (
-          <span className="ml-auto shrink-0 text-xs text-gray-400">{readableSize(size)}</span>
+          <span className="ml-auto shrink-0 text-xs text-fg-faint">{readableSize(size)}</span>
         )}
       </div>
       {error && <p className="mt-1.5 text-xs font-medium text-red-600">{error}</p>}

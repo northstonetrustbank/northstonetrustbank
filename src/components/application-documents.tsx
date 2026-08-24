@@ -65,12 +65,12 @@ export function ApplicationDocuments({
   const totalKb = Math.round(documents.reduce((n, d) => n + d.sizeBytes, 0) / 1024);
 
   return (
-    <div className="mt-4 rounded-xl border border-navy-100 bg-navy-50/40 p-4">
+    <div className="mt-4 rounded-xl border border-line bg-ink-2/40 p-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-xs font-bold uppercase tracking-wide text-navy-700">
+        <p className="text-xs font-bold uppercase tracking-wide text-fg-muted">
           Supporting documents
         </p>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-fg-muted">
           {documents.length} of {required.length} received
           {documents.length > 0 ? ` · ${totalKb} KB` : ""}
           {missing.length > 0 ? ` · ${missing.length} required still missing` : ""}
@@ -84,20 +84,20 @@ export function ApplicationDocuments({
             <li key={r.key} className="flex items-center gap-2 text-sm">
               <span
                 className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                  doc ? "bg-green-500" : r.required ? "bg-red-400" : "bg-gray-300"
+                  doc ? "bg-pos/100" : r.required ? "bg-red-400" : "bg-gray-300"
                 }`}
               />
-              <span className="text-gray-600">{NAMES[r.key] ?? r.key}</span>
+              <span className="text-fg-muted">{NAMES[r.key] ?? r.key}</span>
               {doc ? (
                 <a
                   href={`/api/files/application/${doc.storedName}`}
                   target="_blank"
-                  className="truncate font-medium text-accent-600 hover:underline"
+                  className="truncate font-medium text-brand-400 hover:underline"
                 >
                   {doc.fileName}
                 </a>
               ) : (
-                <span className={`text-xs ${r.required ? "text-red-600" : "text-gray-400"}`}>
+                <span className={`text-xs ${r.required ? "text-red-600" : "text-fg-faint"}`}>
                   {r.required ? "missing" : "optional"}
                 </span>
               )}
@@ -107,24 +107,24 @@ export function ApplicationDocuments({
       </ul>
 
       {docsRequestedAt && (
-        <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+        <p className="mt-3 rounded-lg bg-amber-400/10 px-3 py-2 text-xs text-amber-300">
           Extra documents requested {docsRequestedAt.toLocaleDateString()}
           {docsNote ? `: ${docsNote}` : ""}
         </p>
       )}
 
-      <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-navy-100 pt-3">
+      <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-line pt-3">
         <form action={requestApplicationDocumentsAction} className="flex items-end gap-2">
           <input type="hidden" name="applicationId" value={applicationId} />
-          <label className="block text-xs font-semibold text-gray-600">
+          <label className="block text-xs font-semibold text-fg-muted">
             Ask for another document
             <input
               name="note"
               placeholder="e.g. a second payslip"
-              className="mt-1 block w-56 rounded-md border border-gray-300 px-3 py-2 text-sm"
+              className="mt-1 block w-56 rounded-md border border-line bg-ink-2 px-3 py-2 text-sm"
             />
           </label>
-          <button className="rounded-md border border-navy-300 px-4 py-2 text-sm font-bold text-navy-700 hover:bg-navy-50">
+          <button className="rounded-md border border-navy-300 px-4 py-2 text-sm font-bold text-fg-muted hover:bg-ink-2">
             Request
           </button>
         </form>
@@ -132,7 +132,7 @@ export function ApplicationDocuments({
         {documents.length > 0 && (
           <form action={purgeApplicationDocumentsAction}>
             <input type="hidden" name="applicationId" value={applicationId} />
-            <button className="rounded-md border border-red-200 px-3 py-2 text-xs font-bold text-red-700 transition hover:bg-red-50">
+            <button className="rounded-md border border-neg/25 px-3 py-2 text-xs font-bold text-neg transition hover:bg-neg/10">
               Delete all after review
             </button>
           </form>

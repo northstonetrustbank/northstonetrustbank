@@ -47,7 +47,7 @@ export function ApplicationDetails({
   if (fields.length === 0) return null;
 
   return (
-    <dl className="mt-3 grid gap-x-6 gap-y-2 rounded-xl bg-navy-50/60 p-4 text-sm sm:grid-cols-2">
+    <dl className="mt-3 grid gap-x-6 gap-y-2 rounded-xl bg-ink-2 p-4 text-sm sm:grid-cols-2">
       {fields.map((f) => {
         const raw = values[f.name];
         const value =
@@ -58,8 +58,8 @@ export function ApplicationDetails({
               : String(raw);
         return (
           <div key={f.name} className="flex justify-between gap-3 border-b border-white/70 pb-1.5">
-            <dt className="text-gray-500">{LABELS[f.name] ?? f.name}</dt>
-            <dd className="text-right font-semibold text-navy-800">{value}</dd>
+            <dt className="text-fg-muted">{LABELS[f.name] ?? f.name}</dt>
+            <dd className="text-right font-semibold text-fg">{value}</dd>
           </div>
         );
       })}

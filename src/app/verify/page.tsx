@@ -57,20 +57,20 @@ export default async function VerifyPage({
   }
 
   return (
-    <main className="flex flex-1 items-center justify-center bg-navy-50/50 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-10 text-center shadow-sm">
+    <main className="flex flex-1 items-center justify-center bg-ink-2 px-4">
+      <div className="w-full max-w-md rounded-2xl border border-line bg-ink-1 p-10 text-center shadow-sm">
         <div
           className={`mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl ${
-            ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            ok ? "bg-pos/12 text-pos" : "bg-neg/12 text-neg"
           }`}
         >
           {ok ? "✓" : "!"}
         </div>
-        <h1 className="mt-5 text-xl font-semibold tracking-tight text-navy-900">{heading}</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-gray-600">{message}</p>
+        <h1 className="mt-5 text-xl font-semibold tracking-tight text-fg">{heading}</h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">{message}</p>
         <Link
           href={ok ? "/onboarding" : "/login"}
-          className="mt-7 inline-block rounded-full bg-accent-500 px-7 py-3 text-sm font-semibold text-white transition hover:bg-accent-600"
+          className="mt-7 inline-block rounded-xl bg-brand-500 px-7 py-3 text-sm font-semibold text-white transition hover:bg-brand-400"
         >
           {ok ? t.verifyPage.continue : t.common.signIn}
         </Link>

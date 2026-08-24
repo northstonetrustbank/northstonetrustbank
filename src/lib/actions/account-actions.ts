@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { getSessionUser, hashPassword, verifyPassword } from "@/lib/auth";
+import { getSession, getSessionUser, hashPassword, verifyPassword } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import { getDict } from "@/i18n/server";
 import type { FormState } from "./auth-actions";
@@ -106,4 +106,37 @@ export async function setSecurityWordAction(
     targetId: user.id,
   });
   return { ok: t.account.securityWordSet };
+}
+
+// ---------- signed-in devices ----------
+
+/**
+ * Ends another device's session. The client's own session is left alone — the
+ * sign-out button is for that — so a mis-click can't log them out of the very
+ * page they are on.
+ */
+export async function revokeSessionAction(formData: FormData) {
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const sessionId = String(formData.get("sessionId"));
+  if (!sessionId || sessionId === session.sid) return;
+
+  const record = await db.session.findFirst({
+    where: { id: sessionId, userId: session.userId, revokedAt: null },
+  });
+  if (!record) return;
+
+  await db.session.update({ where: { id: record.id }, data: { revokedAt: new Date() } });
+
+  await audit({
+    actorId: session.userId,
+    actorLabel: record.label,
+    action: "SESSION_REVOKED",
+    targetType: "SESSION",
+    targetId: record.id,
+    details: `Ended session on ${record.label}`,
+  });
+
+  revalidatePath("/account/security");
 }

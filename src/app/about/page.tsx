@@ -17,7 +17,7 @@ export default async function AboutPage() {
   const t = await getDict();
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 bg-white text-[#101828]">
       <MarketingHeader />
       <PageHero eyebrow={t.about.eyebrow} title={t.about.title} body={t.about.body} />
 
@@ -74,7 +74,7 @@ export default async function AboutPage() {
         <div className="grid items-center gap-14 lg:grid-cols-2">
           <div className="relative order-2 aspect-[4/3] overflow-hidden rounded-3xl shadow-xl shadow-navy-900/15 lg:order-1">
             <Image
-              src="/images/lobby.jpg"
+              src="/images/planning.jpg"
               alt=""
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -118,13 +118,13 @@ export default async function AboutPage() {
           <div className="flex flex-wrap gap-3">
             <Link
               href="/signup"
-              className="rounded-full bg-accent-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-accent-700/30 transition hover:bg-accent-600"
+              className="rounded-xl bg-accent-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-accent-700/30 transition hover:bg-accent-600"
             >
               {t.common.openAccount}
             </Link>
             <Link
               href="/contact"
-              className="rounded-full border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
+              className="rounded-xl border border-white/25 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
             >
               {t.nav.contact}
             </Link>

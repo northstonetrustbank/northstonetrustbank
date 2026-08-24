@@ -50,6 +50,90 @@ model User {
   applications  ProductApplication[]
   savingsGoals  SavingsGoal[]
   chats         ChatConversation[]
+  sessions      Session[]
+  tickets       SupportTicket[]
+  payees        Payee[]
+}
+
+// Someone a client pays more than once — an electricity company, a landlord,
+// another Northstone client. Saving them means the account details are entered
+// once rather than retyped every month, which is the whole point.
+//
+// Payees are archived, never deleted: a payment's history has to survive the
+// payee being put away.
+model Payee {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String // "Con Edison"
+  nickname       String? // "Apartment electric"
+  kind           String    @default("BILLER") // BILLER | PERSON | INTERNAL
+  // How the money leaves, drawn from the same catalogue as withdrawals.
+  methodKey      String?
+  accountRef     String? // account number, tag or handle
+  institution    String?
+  // Set when the payee is another Northstone client, so the payment is internal
+  // and settles at once instead of queueing for review.
+  internalUserId String?
+  lastPaidAt     DateTime?
+  archivedAt     DateTime?
+  createdAt      DateTime  @default(now())
+
+  transactions Transaction[]
+
+  @@index([userId, archivedAt])
+}
+
+// One row per signed-in device, so a client can see where their account is
+// open and end a session they don't recognise. The JWT cookie carries this
+// row's id; a revoked or missing row stops being accepted at the next request.
+model Session {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Coarse device description parsed from the user agent ("Chrome on Windows").
+  // The raw user agent is kept for support; the IP address is never stored.
+  label      String
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([userId, revokedAt])
+}
+
+// A support request the client can follow, unlike live chat which disappears
+// when the tab closes. Messages thread underneath.
+model SupportTicket {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reference       String   @unique // NS-S-XXXXXXXX, quoted back to the client
+  category        String // ACCOUNT | TRANSACTION | CARD | LOAN | SECURITY | OTHER
+  subject         String
+  status          String   @default("OPEN") // OPEN | AWAITING_CLIENT | RESOLVED
+  unreadForAdmin  Boolean  @default(true)
+  unreadForClient Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  lastMessageAt   DateTime @default(now())
+
+  messages TicketMessage[]
+
+  @@index([userId, lastMessageAt])
+  @@index([status, lastMessageAt])
+}
+
+model TicketMessage {
+  id          String        @id @default(cuid())
+  ticketId    String
+  ticket      SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender      String // CLIENT | ADMIN
+  authorLabel String // name shown on the message
+  body        String
+  createdAt   DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
 }
 
 // Live chat: one conversation per visitor, with a thread of messages.
@@ -135,6 +219,13 @@ model ProductApplication {
   // something extra, with docsNote explaining what.
   docsRequestedAt    DateTime?
   docsNote           String?
+  // Card controls the client manages themselves from the cards page. Limits
+  // are null until an admin sets one, which means "no limit set" rather than
+  // a limit of zero.
+  dailyLimitCents    Int?
+  monthlyLimitCents  Int?
+  contactless        Boolean   @default(true)
+  onlinePayments     Boolean   @default(true)
   createdAt          DateTime  @default(now())
 
   transactions Transaction[]
@@ -175,6 +266,9 @@ model DepositMethod {
   routeIdentifier   String? // account number / tag / wallet address
   routeInstitution  String?
   routeInstructions String?
+  // How long this rail usually takes, in the admin's own words. Null falls
+  // back to the sensible default in src/lib/methods.ts.
+  etaLabel          String?
   sortOrder         Int      @default(0)
   createdAt         DateTime @default(now())
 }
@@ -218,6 +312,11 @@ model Transaction {
   applicationId String?
   application   ProductApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
 
+  // Set when the payment went to a saved payee, so a client can see everything
+  // they have ever paid one. Survives the payee being archived.
+  payeeId String?
+  payee   Payee?  @relation(fields: [payeeId], references: [id], onDelete: SetNull)
+
   type        String // DEPOSIT | WITHDRAWAL | ADJUSTMENT
   status      String @default("PENDING") // PENDING | POSTED | REJECTED
   amountCents Int // credits positive, debits negative
@@ -234,24 +333,24 @@ model Transaction {
   rejectReason     String?
   reviewedBy       String? // admin email that verified/rejected
   proofRequestedAt DateTime? // set when admin asks the client for proof
-
   // VAT clearance gate on money leaving an account (withdrawals and sends).
   // The row stays PENDING throughout — deliberately, because the available
   // balance is reserved by summing PENDING withdrawals/sends, and a separate
   // status would quietly release that hold and let the same money go twice.
-  // "Cleared" is therefore vatClearedAt, not a status change.
-  vatCode       String? // six digits; the admin reads this to send it on
-  vatRequiredAt DateTime? // set when the request is gated
-  vatSentAt     DateTime? // set when an admin emails the code to the client
-  vatClearedAt  DateTime? // set when the client enters the right code
+  vatCode       String?
+  vatRequiredAt DateTime?
+  vatSentAt     DateTime?
+  vatClearedAt  DateTime?
   vatAttempts   Int       @default(0)
   // A held SEND knows where it is going; the money only moves once cleared.
   sendToAccountId String?
+
 
   createdAt DateTime  @default(now())
   postedAt  DateTime?
 
   @@index([applicationId, createdAt])
+  @@index([payeeId, createdAt])
 }
 
 model KycDocument {

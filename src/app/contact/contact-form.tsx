@@ -87,7 +87,7 @@ export function ContactForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-full bg-accent-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60 sm:w-auto sm:px-10"
+        className="w-full rounded-xl bg-accent-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-accent-600 disabled:opacity-60 sm:w-auto sm:px-10"
       >
         {pending ? labels.sending : labels.send}
       </button>

@@ -31,7 +31,7 @@ export default async function TwoFactorPage() {
   const locale = await getLocale();
 
   return (
-    <main className="flex min-h-screen flex-1 flex-col bg-navy-50/50">
+    <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
       <header className="border-b border-white/10 bg-navy-900">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
           <Logo theme="dark" href="/" />
@@ -40,14 +40,14 @@ export default async function TwoFactorPage() {
       </header>
 
       <div className="mx-auto w-full max-w-md flex-1 px-6 py-16">
-        <div className="rounded-2xl border border-gray-200 bg-white p-9 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent-50 text-2xl">
+        <div className="rounded-2xl border border-line bg-ink-1 p-9 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/12 text-2xl">
             ✉️
           </div>
-          <h1 className="mt-5 text-center text-xl font-semibold tracking-tight text-navy-900">
+          <h1 className="mt-5 text-center text-xl font-semibold tracking-tight text-fg">
             {t.twoFactor.checkTitle}
           </h1>
-          <p className="mt-3 text-center text-[15px] leading-relaxed text-gray-600">
+          <p className="mt-3 text-center text-[15px] leading-relaxed text-fg-muted">
             {fill(t.twoFactor.checkBody, { email: maskEmail(user.email) })}
           </p>
 
