@@ -89,7 +89,7 @@ export function ProductBanner({
 
       {/* Dark enough at the foot to read type over, clear at the top so the
           artwork is not smothered by its own label. */}
-      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink-0 via-ink-0/75 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-navy-950 via-navy-950/75 to-transparent" />
 
       <div className="relative flex h-full flex-col justify-between p-5">
         <div className="flex justify-end">

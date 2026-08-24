@@ -62,8 +62,8 @@ export function ProductTile({
       )}
       {/* A scrim only where something has to stay legible over the artwork. */}
       <div
-        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-0 to-transparent ${
-          value || cta ? "h-2/3 via-ink-0/70" : "h-1/3 via-ink-0/25"
+        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950 to-transparent ${
+          value || cta ? "h-2/3 via-navy-950/70" : "h-1/3 via-navy-950/25"
         }`}
       />
 
@@ -84,7 +84,7 @@ export function ProductTile({
           {value ? (
             <>
               {valueLabel && !sm && (
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-muted">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-navy-200">
                   {valueLabel}
                 </p>
               )}
@@ -98,7 +98,7 @@ export function ProductTile({
             </>
           ) : cta ? (
             <span
-              className={`inline-flex rounded-xl bg-ink-2 font-semibold text-white backdrop-blur-sm transition group-hover:bg-brand-500 ${
+              className={`inline-flex rounded-xl bg-white/15 font-semibold text-white backdrop-blur-sm transition group-hover:bg-brand-500 ${
                 sm ? "px-3 py-1.5 text-[12px]" : "px-4 py-2 text-[13px]"
               }`}
             >

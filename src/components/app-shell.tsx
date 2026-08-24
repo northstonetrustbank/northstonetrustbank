@@ -138,7 +138,7 @@ export async function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden w-[248px] shrink-0 border-r border-line-soft lg:flex lg:flex-col">
         <div className="px-5 py-5">
-          <Logo theme="dark" href="/dashboard" />
+          <Logo theme="light" href="/dashboard" />
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           <NavColumn
@@ -156,7 +156,7 @@ export async function AppShell({
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
             <MobileDrawer openLabel={t.appnav.openMenu} closeLabel={t.appnav.closeMenu}>
               <div className="px-2 pb-2">
-                <Logo theme="dark" href="/dashboard" />
+                <Logo theme="light" href="/dashboard" />
               </div>
               <div className="mt-4">
                 <NavColumn
@@ -190,7 +190,7 @@ export async function AppShell({
                 labels={{ title: t.notif.title, empty: t.notif.empty, dismiss: t.notif.dismiss }}
               />
               <span className="hidden sm:block">
-                <LanguageSwitcher current={locale} variant="dark" />
+                <LanguageSwitcher current={locale} variant="light" />
               </span>
               <Link
                 href="/account"
@@ -263,9 +263,9 @@ export async function PlainShell({
     <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
       <header className="border-b border-line-soft">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-          <Logo theme="dark" href={backHref} />
+          <Logo theme="light" href={backHref} />
           <div className="flex items-center gap-3">
-            <LanguageSwitcher current={locale} variant="dark" />
+            <LanguageSwitcher current={locale} variant="light" />
             <form action={logoutAction}>
               <button className="rounded-xl px-4 py-2 text-sm font-semibold text-fg-muted transition hover:bg-ink-2 hover:text-fg">
                 {t.common.signOut}

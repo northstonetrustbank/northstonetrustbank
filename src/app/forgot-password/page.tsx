@@ -14,7 +14,7 @@ export default async function ForgotPage() {
     <main className="scheme-dark flex min-h-screen flex-1 items-center justify-center bg-ink-0 px-4 py-12 text-fg">
       <div className="w-full max-w-md">
         <div className="mb-8 flex items-center justify-between">
-          <Logo theme="dark" />
+          <Logo theme="light" />
           <LanguageSwitcher current={locale} variant="light" />
         </div>
         <div className="rounded-2xl border border-line bg-ink-1 p-8 shadow-sm">

@@ -33,11 +33,11 @@ export default async function LoginPage() {
       {/* Form side */}
       <div className="relative flex flex-1 items-center justify-center px-6 py-12">
         <div className="absolute right-6 top-6">
-          <LanguageSwitcher current={locale} variant="dark" />
+          <LanguageSwitcher current={locale} variant="light" />
         </div>
         <div className="w-full max-w-md">
           <div className="mb-10 lg:hidden">
-            <Logo theme="dark" />
+            <Logo theme="light" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-fg">
             {t.auth.loginTitle}

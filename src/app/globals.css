@@ -123,11 +123,16 @@ body {
 
   --color-fg: #04162c; /* primary text — the deep face of the mark */
   --color-fg-muted: #4c6485; /* secondary text */
-  --color-fg-faint: #7c90ab; /* captions, disabled */
+  --color-fg-faint: #6b7f9c; /* captions, disabled */
 
-  --color-brand-400: #4d95e4;
+  /* The 400 step is the hover tone. On a dark ground hover lifts toward white,
+     so upstream it is the lightest of the three; on a light ground hover has to
+     go the other way or it washes out — #4d95e4 on this page ground is 2.9:1,
+     which is why links were disappearing. Inverted deliberately: 400 is darker
+     than 500, and 600 remains the pressed state. */
+  --color-brand-400: #035bb5;
   --color-brand-500: #046bd4;
-  --color-brand-600: #0357ae;
+  --color-brand-600: #04478c;
 
   /* Rewards and bonuses — the chip gold from the card faces, darkened so it
      still reads against a light surface. A gift never wears the same blue as
