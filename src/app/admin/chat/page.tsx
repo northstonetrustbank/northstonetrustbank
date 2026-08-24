@@ -63,7 +63,7 @@ export default async function AdminChatPage({
         <div className="lg:col-span-2">
           {selected ? (
             <div className="rounded-2xl border border-line bg-ink-1 shadow-sm">
-              <div className="border-b border-line bg-ink-2-soft px-5 py-4">
+              <div className="border-b border-line bg-ink-2 px-5 py-4">
                 <p className="font-semibold text-fg">{selected.name}</p>
                 <p className="text-xs text-fg-muted">
                   {[

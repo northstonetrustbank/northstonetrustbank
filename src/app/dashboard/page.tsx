@@ -243,9 +243,6 @@ export default async function DashboardPage({
           <QuickAction href="/transfers?tab=send" icon="send" label={t.bank.actionSend} />
           <QuickAction href="/transfers?tab=withdraw" icon="bank" label={t.bank.withdraw} />
           <QuickAction href="/payments" icon="bill" label={t.payments.tabPay} />
-          {portfolio.savings && (
-            <QuickAction href="/transfers?tab=between" icon="swap" label={t.bank.transfer} />
-          )}
           <QuickAction href="/statements" icon="statement" label={t.statements.link} />
           <QuickAction href="/goals" icon="target" label={t.bank.actionGoals} />
         </div>
