@@ -6,7 +6,18 @@ import { CardStack } from "@/components/card-stack";
 import { Icons } from "@/components/icons";
 import { ChatLauncher } from "@/components/chat-launcher";
 
-const personalIcons = [Icons.card, Icons.savings, Icons.lending, Icons.mortgage, Icons.insurance];
+// One icon per entry in t.landing.personal.items, in the same order.
+const personalIcons = [
+  Icons.card,
+  Icons.savings,
+  Icons.lending,
+  Icons.mortgage,
+  Icons.car,
+  Icons.student,
+  Icons.renovation,
+  Icons.buildings,
+  Icons.insurance,
+];
 const commercialIcons = [
   Icons.card,
   Icons.deposit,
@@ -17,6 +28,19 @@ const commercialIcons = [
   Icons.business,
 ];
 const benefitIcons = [Icons.review, Icons.statement, Icons.shield, Icons.globe, Icons.buildings, Icons.lending];
+
+/**
+ * The icon for the nth item, or a neutral one.
+ *
+ * These arrays are indexed by position in the dictionary, so adding a product
+ * to t.landing without extending the array left `Icon` undefined — and React
+ * renders an undefined component by throwing, which took the whole homepage
+ * to a 500. That is exactly what four new lending products did. A missing
+ * icon is now a slightly plain tile rather than an outage.
+ */
+function iconAt(icons: ((p: { className?: string }) => React.ReactElement)[], i: number) {
+  return icons[i] ?? Icons.review;
+}
 
 export default async function HomePage() {
   const t = await getDict();
@@ -84,7 +108,7 @@ export default async function HomePage() {
         </div>
         <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {t.landing.personal.items.map((p, i) => {
-            const Icon = personalIcons[i];
+            const Icon = iconAt(personalIcons, i);
             return (
               <Link
                 key={p.title}
@@ -126,7 +150,7 @@ export default async function HomePage() {
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {t.landing.commercial.items.map((p, i) => {
-              const Icon = commercialIcons[i];
+              const Icon = iconAt(commercialIcons, i);
               return (
                 <Link
                   key={p.title}
@@ -167,7 +191,7 @@ export default async function HomePage() {
           </div>
           <div className="grid gap-8 sm:grid-cols-2 lg:col-span-3">
             {t.landing.benefits.map((f, i) => {
-              const Icon = benefitIcons[i];
+              const Icon = iconAt(benefitIcons, i);
               return (
                 <div key={f.title} className="flex gap-4">
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-50 text-accent-600">
@@ -198,7 +222,7 @@ export default async function HomePage() {
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {t.landing.fast.map((f, i) => {
-              const Icon = [Icons.deposit, Icons.money, Icons.business][i];
+              const Icon = iconAt([Icons.deposit, Icons.money, Icons.business], i);
               return (
                 <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-7 shadow-sm">
                   <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-50 text-accent-600">

@@ -1,9 +1,11 @@
+import { AccountManagerFooter } from "./account-manager-footer";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { logoutAction } from "@/lib/actions/auth-actions";
+import { isTwoFactorExempt } from "@/lib/auth";
 import { getDict, getLocale } from "@/i18n/server";
-import { primaryNav, secondaryNav, type NavItem, type NavKey } from "@/lib/nav";
-import { AccountManagerFooter } from "./account-manager-footer";
+import { navGroups, primaryNav, type NavGroup, type NavItem, type NavKey } from "@/lib/nav";
 import { Icons, NavIcons } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { LanguageChoices, LanguageSwitcher } from "@/components/language-switcher";
@@ -17,6 +19,9 @@ type ShellUser = {
   lastName: string;
   email: string;
   locale: string;
+  role: string;
+  status: string;
+  twoFactorEnabled: boolean;
 };
 
 /**
@@ -51,27 +56,29 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 
 /** The nav column — shared verbatim by the desktop sidebar and the drawer. */
 function NavColumn({
-  primary,
-  secondary,
+  groups,
   active,
   signOutLabel,
 }: {
-  primary: NavItem[];
-  secondary: NavItem[];
+  groups: NavGroup[];
   active: NavKey;
   signOutLabel: string;
 }) {
   return (
     <div className="flex h-full flex-col">
-      <nav className="flex flex-1 flex-col gap-0.5 px-3">
-        {primary.map((item) => (
-          <NavLink key={item.key} item={item} active={item.key === active} />
+      <nav className="flex flex-1 flex-col gap-5 px-3">
+        {groups.map((group) => (
+          <div key={group.key} className="space-y-0.5">
+            <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-fg-faint">
+              {group.label}
+            </p>
+            {group.items.map((item) => (
+              <NavLink key={item.key} item={item} active={item.key === active} />
+            ))}
+          </div>
         ))}
       </nav>
-      <div className="mt-4 space-y-0.5 border-t border-line-soft px-3 pt-4">
-        {secondary.map((item) => (
-          <NavLink key={item.key} item={item} active={item.key === active} />
-        ))}
+      <div className="mt-4 border-t border-line-soft px-3 pt-4">
         <form action={logoutAction}>
           <button
             type="submit"
@@ -97,6 +104,7 @@ export async function AppShell({
   title,
   subtitle,
   actions,
+  bleed = false,
   children,
 }: {
   user: ShellUser;
@@ -104,12 +112,31 @@ export async function AppShell({
   title: React.ReactNode;
   subtitle?: React.ReactNode;
   actions?: React.ReactNode;
+  /**
+   * The dashboard's immersive top: the page's own first section is a gradient
+   * that runs to the screen edges and up behind the header, so the header
+   * floats transparent over it rather than sitting in a white bar above it.
+   * The title is dropped in this mode — the section carries its own greeting.
+   */
+  bleed?: boolean;
   children: React.ReactNode;
 }) {
+  // Two-factor is mandatory for clients. This is the backstop for a deep link
+  // or an older session that skipped the redirect at sign-in; the setup page
+  // does not render inside AppShell, so there is no loop.
+  if (
+    user.role === "CLIENT" &&
+    user.status === "ACTIVE" &&
+    !user.twoFactorEnabled &&
+    !isTwoFactorExempt(user.email)
+  ) {
+    redirect("/setup-2fa");
+  }
+
   const t = await getDict();
   const locale = await getLocale();
+  const groups = navGroups(t);
   const primary = primaryNav(t);
-  const secondary = secondaryNav(t);
   const tabs = primary.filter((i) => i.onTabBar);
 
   const notifications = await db.notification.findMany({
@@ -138,31 +165,37 @@ export async function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden w-[248px] shrink-0 border-r border-line-soft lg:flex lg:flex-col">
         <div className="px-5 py-5">
-          <Logo theme="light" href="/dashboard" />
+          <Logo href="/dashboard" />
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           <NavColumn
-            primary={primary}
-            secondary={secondary}
+            groups={groups}
             active={active}
             signOutLabel={t.common.signOut}
           />
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-40 border-b border-line-soft bg-ink-0/85 backdrop-blur-xl">
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        {/* Header. Sticky on every page so it never scrolls away. In bleed mode
+            it is a solid navy bar that sits continuously on top of the hero
+            gradient; otherwise a light bar. Either way it stays pinned. */}
+        <header
+          className={
+            bleed
+              ? "sticky top-0 z-40 border-b border-white/10 bg-[#0b2350]/90 backdrop-blur-xl"
+              : "sticky top-0 z-40 border-b border-line-soft bg-ink-0/85 backdrop-blur-xl"
+          }
+        >
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
-            <MobileDrawer openLabel={t.appnav.openMenu} closeLabel={t.appnav.closeMenu}>
+            <MobileDrawer openLabel={t.appnav.openMenu} closeLabel={t.appnav.closeMenu} onDark={bleed}>
               <div className="px-2 pb-2">
-                <Logo theme="light" href="/dashboard" />
+                <Logo href="/dashboard" />
               </div>
               <div className="mt-4">
                 <NavColumn
-                  primary={primary}
-                  secondary={secondary}
-                  active={active}
+                  groups={groups}
+                      active={active}
                   signOutLabel={t.common.signOut}
                 />
               </div>
@@ -175,11 +208,17 @@ export async function AppShell({
             </MobileDrawer>
 
             <div className="min-w-0 flex-1">
-              <h1 className="truncate text-[15px] font-semibold tracking-tight text-fg sm:text-base">
-                {title}
-              </h1>
-              {subtitle && (
-                <p className="truncate text-xs text-fg-faint sm:text-[13px]">{subtitle}</p>
+              {/* In bleed mode the gradient section carries its own greeting,
+                  so the header title would be a duplicate. */}
+              {!bleed && (
+                <>
+                  <h1 className="truncate text-[15px] font-semibold tracking-tight text-fg sm:text-base">
+                    {title}
+                  </h1>
+                  {subtitle && (
+                    <p className="truncate text-xs text-fg-faint sm:text-[13px]">{subtitle}</p>
+                  )}
+                </>
               )}
             </div>
 
@@ -187,15 +226,20 @@ export async function AppShell({
               {actions}
               <NotificationCenter
                 items={notifItems}
+                onDark={bleed}
                 labels={{ title: t.notif.title, empty: t.notif.empty, dismiss: t.notif.dismiss }}
               />
               <span className="hidden sm:block">
-                <LanguageSwitcher current={locale} variant="light" />
+                <LanguageSwitcher current={locale} variant={bleed ? "dark" : "light"} />
               </span>
               <Link
                 href="/account"
                 title={`${user.firstName} ${user.lastName}`}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-500/15 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-500/25"
+                className={`flex h-9 w-9 items-center justify-center rounded-full text-[12px] font-semibold transition ${
+                  bleed
+                    ? "bg-white/15 text-white hover:bg-white/25"
+                    : "bg-brand-500/15 text-brand-500 hover:bg-brand-500/25"
+                }`}
               >
                 {initials}
               </Link>
@@ -263,7 +307,7 @@ export async function PlainShell({
     <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
       <header className="border-b border-line-soft">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-6">
-          <Logo theme="light" href={backHref} />
+          <Logo href={backHref} />
           <div className="flex items-center gap-3">
             <LanguageSwitcher current={locale} variant="light" />
             <form action={logoutAction}>

@@ -12,7 +12,7 @@ import type { CardTheme } from "@/lib/products";
 
 const STATUS_TONES = {
   ok: "bg-emerald-400/95 text-emerald-950",
-  pending: "bg-amber-300/95 text-amber-950",
+  pending: "bg-[#3b82f6] text-white",
   bad: "bg-red-400/95 text-red-950",
   muted: "bg-ink-3/80 text-fg backdrop-blur-sm",
 } as const;
@@ -87,9 +87,13 @@ export function ProductBanner({
         />
       )}
 
-      {/* Dark enough at the foot to read type over, clear at the top so the
-          artwork is not smothered by its own label. */}
-      <div className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-navy-950 via-navy-950/75 to-transparent" />
+      {/* Two scrims. A full wash holds the whole face down a step so no bright
+          part of the artwork strands the text, and a stronger foot makes the
+          bottom third genuinely dark to read over. The body text was
+          text-fg-muted — a dark slate meant for white pages — sitting on a dark
+          image, which is why it was all but invisible. */}
+      <div className="absolute inset-0 bg-[#020d1c]/25" />
+      <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-navy-950 via-navy-950/85 to-transparent" />
 
       <div className="relative flex h-full flex-col justify-between p-5">
         <div className="flex justify-end">
@@ -103,21 +107,25 @@ export function ProductBanner({
         </div>
 
         <div className="min-w-0">
-          <p className="truncate text-[17px] font-semibold tracking-tight text-white">{title}</p>
+          <p className="truncate text-[17px] font-semibold tracking-tight text-white [text-shadow:0_1px_8px_rgba(3,8,20,0.6)]">
+            {title}
+          </p>
 
           {value ? (
             <p className="tnum mt-1 truncate text-2xl font-semibold tracking-tight text-white">
               {value}
               {valueLabel && (
-                <span className="ml-2 text-[11px] font-medium text-fg-muted">{valueLabel}</span>
+                <span className="ml-2 text-[11px] font-medium text-navy-200">{valueLabel}</span>
               )}
             </p>
           ) : (
-            <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-fg-muted">{body}</p>
+            <p className="mt-1 line-clamp-2 text-[13px] font-medium leading-snug text-navy-100 [text-shadow:0_1px_6px_rgba(3,8,20,0.7)]">
+              {body}
+            </p>
           )}
 
           {!value && cta && (
-            <span className="mt-2.5 inline-flex rounded-xl bg-ink-2/90 px-3.5 py-1.5 text-[12.5px] font-semibold text-white backdrop-blur-sm transition group-hover:bg-brand-500">
+            <span className="mt-2.5 inline-flex rounded-xl bg-white px-4 py-2 text-[12.5px] font-semibold text-navy-900 shadow-sm transition group-hover:bg-[#3b82f6] group-hover:text-white">
               {cta}
             </span>
           )}

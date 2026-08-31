@@ -31,7 +31,7 @@ export function ResetForm({ token, labels }: { token: string; labels: Labels }) 
         </p>
         <Link
           href="/login"
-          className="mt-5 inline-block w-full rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-400"
+          className="mt-5 inline-block w-full rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-600"
         >
           {labels.signIn}
         </Link>
@@ -61,7 +61,7 @@ export function ResetForm({ token, labels }: { token: string; labels: Labels }) 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
       >
         {pending ? "…" : labels.submit}
       </button>

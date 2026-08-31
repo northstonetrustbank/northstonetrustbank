@@ -58,7 +58,7 @@ export function AccountCard({
       <div className="relative mt-3 flex flex-wrap items-center gap-2">
         <StatusChip tone="ok">{t.products.active}</StatusChip>
         {account.pendingDepositCents > 0 && (
-          <span className="tnum text-[11px] font-medium text-amber-300">
+          <span className="tnum text-[11px] font-medium text-amber-700">
             {fill(t.accountsPage.pendingIn, {
               amount: formatMoney(account.pendingDepositCents, locale, account.currency),
             })}

@@ -40,7 +40,7 @@ export default async function WithdrawalsQueuePage() {
           </p>
           <div className="mt-4 space-y-3">
             {held.map((tx) => (
-              <div key={tx.id} className="rounded-2xl border border-gift/30 bg-gift/5 p-5">
+              <div key={tx.id} className="rounded-2xl border border-gold/30 bg-gold/5 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
                     <p className="tnum text-xl font-semibold tracking-tight text-fg">
@@ -75,7 +75,7 @@ export default async function WithdrawalsQueuePage() {
                   </div>
                 </div>
 
-                <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-gift/25 pt-4">
+                <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-gold/25 pt-4">
                   <form action={sendVatCodeAction}>
                     <input type="hidden" name="txId" value={tx.id} />
                     <button className="rounded-md bg-brand-500 px-5 py-2 text-sm font-bold text-white hover:bg-brand-600">

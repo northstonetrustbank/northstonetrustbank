@@ -16,7 +16,7 @@ const SIDE_LABELS: Record<string, string> = {
 
 const statusStyles: Record<string, string> = {
   ACTIVE: "bg-pos/12 text-pos",
-  PENDING: "bg-amber-400/12 text-amber-300",
+  PENDING: "bg-amber-400/12 text-amber-700",
   BLOCKED: "bg-neg/12 text-neg",
   REJECTED: "bg-ink-3 text-fg-muted",
 };
@@ -166,7 +166,7 @@ export default async function ClientsPage() {
                         className="mt-1 block w-52 rounded-md border border-line bg-ink-2 px-3 py-2 text-sm"
                       />
                     </label>
-                    <button className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold text-white hover:bg-brand-400">
+                    <button className="rounded-md bg-brand-500 px-4 py-2 text-sm font-bold text-white hover:bg-brand-600">
                       Apply
                     </button>
                   </form>

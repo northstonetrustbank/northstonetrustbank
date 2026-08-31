@@ -5,20 +5,19 @@ import Link from "next/link";
  * N — the bright face on the left, the deep face on the right. Paths are traced
  * from the supplied logo artwork, so this is the client's mark, not an approximation.
  *
- * theme "dark" = sitting on navy (the deep face is lifted so it stays readable),
- * theme "light" = sitting on white.
+ * `onDark` is set only where the mark sits on a genuinely dark surface, where the
+ * deepest stone tone disappears and the deep face has to be lifted to stay read.
  */
 export function LogoMark({
   className = "h-8 w-8",
-  theme = "light",
+  onDark = false,
 }: {
   className?: string;
-  theme?: "dark" | "light";
+  onDark?: boolean;
 }) {
-  const uid = theme === "dark" ? "d" : "l";
-  // On navy the deepest stone tone disappears, so the deep face is lifted to navy-600/700.
-  const deepTop = theme === "dark" ? "#2a6cc0" : "#013378";
-  const deepBottom = theme === "dark" ? "#0d3f86" : "#04162c";
+  const uid = onDark ? "d" : "l";
+  const deepTop = onDark ? "#2a6cc0" : "#013378";
+  const deepBottom = onDark ? "#0d3f86" : "#04162c";
 
   return (
     <svg viewBox="0 0 104 124" className={className} aria-hidden="true">
@@ -47,23 +46,31 @@ export function LogoMark({
 }
 
 export function Logo({
-  theme = "dark",
+  onDark = false,
   subtitle,
   href = "/",
 }: {
-  theme?: "dark" | "light";
+  /**
+   * Set only where the logo sits on a genuinely dark surface — the marketing
+   * header and footer, the legal pages, the auth shell. Everything else takes
+   * its colour from the tokens, so it follows the page instead of assuming one.
+   *
+   * This used to be theme="dark" and defaulted to it, which is how the wordmark
+   * ended up painted white on white once the app went light.
+   */
+  onDark?: boolean;
   subtitle?: string;
   href?: string | null;
 }) {
-  const nameColor = theme === "dark" ? "text-white" : "text-navy-900";
-  const subColor = theme === "dark" ? "text-accent-100" : "text-accent-500";
+  const nameColor = onDark ? "text-white" : "text-fg";
+  const subColor = onDark ? "text-accent-100" : "text-brand-500";
 
   // Sizes step down on narrow phones. The signed-in header also carries a
   // language switcher and a sign-out button, and at 320px the three together
   // pushed the page wider than the screen, so it panned sideways under a thumb.
   const content = (
     <span className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-      <LogoMark className="h-8 w-[26px] shrink-0 sm:h-9 sm:w-[30px]" theme={theme} />
+      <LogoMark className="h-8 w-[26px] shrink-0 sm:h-9 sm:w-[30px]" onDark={onDark} />
       <span className="min-w-0 leading-tight">
         <span
           className={`block text-[13px] font-bold tracking-[0.06em] sm:text-[15px] sm:tracking-[0.08em] ${nameColor}`}

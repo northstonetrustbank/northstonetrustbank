@@ -19,7 +19,7 @@ function DrawForm({ appId, labels }: { appId: string; labels: { draw: string; dr
       {state?.error && <p className="mt-2 text-xs text-red-600">{state.error}</p>}
       <button
         disabled={pending}
-        className="mt-3 w-full rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400 disabled:opacity-60"
+        className="mt-3 w-full rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
       >
         {labels.draw}
       </button>
@@ -39,7 +39,7 @@ function PayForm({ appId, labels }: { appId: string; labels: { pay: string; payA
       {state?.error && <p className="mt-2 text-xs text-red-600">{state.error}</p>}
       <button
         disabled={pending}
-        className="mt-3 w-full rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400 disabled:opacity-60"
+        className="mt-3 w-full rounded-xl bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
       >
         {labels.pay}
       </button>

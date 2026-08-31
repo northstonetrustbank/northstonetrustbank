@@ -107,7 +107,7 @@ export function ApplicationDocuments({
       </ul>
 
       {docsRequestedAt && (
-        <p className="mt-3 rounded-lg bg-amber-400/10 px-3 py-2 text-xs text-amber-300">
+        <p className="mt-3 rounded-lg bg-amber-400/10 px-3 py-2 text-xs text-amber-700">
           Extra documents requested {docsRequestedAt.toLocaleDateString()}
           {docsNote ? `: ${docsNote}` : ""}
         </p>
@@ -124,7 +124,7 @@ export function ApplicationDocuments({
               className="mt-1 block w-56 rounded-md border border-line bg-ink-2 px-3 py-2 text-sm"
             />
           </label>
-          <button className="rounded-md border border-navy-300 px-4 py-2 text-sm font-bold text-fg-muted hover:bg-ink-2">
+          <button className="rounded-md border border-line px-4 py-2 text-sm font-bold text-fg-muted hover:bg-ink-2">
             Request
           </button>
         </form>

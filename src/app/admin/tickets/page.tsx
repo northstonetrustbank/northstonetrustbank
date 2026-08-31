@@ -13,7 +13,7 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-  OPEN: "bg-amber-400/10 text-amber-300 ring-amber-600/15",
+  OPEN: "bg-amber-400/10 text-amber-700 ring-amber-600/15",
   AWAITING_CLIENT: "bg-brand-500/12 text-brand-400 ring-accent-600/15",
   RESOLVED: "bg-pos/10 text-pos ring-emerald-600/15",
 };

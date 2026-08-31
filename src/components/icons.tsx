@@ -63,6 +63,21 @@ export const Icons: Record<string, (p: IconProps) => React.ReactElement> = {
   business: ({ className }) => (
     <svg {...base} className={className}><path d="M4 8h16l-1 12H5z" /><path d="M9 8V6a3 3 0 0 1 6 0v2" /></svg>
   ),
+  car: ({ className }) => (
+    <svg {...base} className={className}><path d="M4 16v-3.2l1.8-4.3A2 2 0 0 1 7.6 7h8.8a2 2 0 0 1 1.8 1.5L20 12.8V16" /><path d="M2.5 16h19" /><circle cx="7.5" cy="18" r="1.6" /><circle cx="16.5" cy="18" r="1.6" /><path d="M5 12.8h14" /></svg>
+  ),
+  student: ({ className }) => (
+    <svg {...base} className={className}><path d="M12 4 2.5 8.6 12 13.2l9.5-4.6z" /><path d="M6.5 10.8v4.4c0 1.6 2.5 2.9 5.5 2.9s5.5-1.3 5.5-2.9v-4.4" /><path d="M21.5 8.6v5.2" /></svg>
+  ),
+  renovation: ({ className }) => (
+    <svg {...base} className={className}><path d="M3 10.5 12 3.5l9 7" /><path d="M5.5 9.4V20h13V9.4" /><path d="M9.5 20v-5h5v5" /></svg>
+  ),
+  heart: ({ className }) => (
+    <svg {...base} className={className}><path d="M12 20s-7-4.35-9.2-8.5C1.3 8.6 2.6 5.5 5.6 5.1c1.9-.25 3.3.8 4.4 2.2 1.1-1.4 2.5-2.45 4.4-2.2 3 .4 4.3 3.5 2.8 6.4C19 15.65 12 20 12 20Z" /></svg>
+  ),
+  bulb: ({ className }) => (
+    <svg {...base} className={className}><path d="M9 18h6M10 21h4" /><path d="M12 3a6 6 0 0 0-3.8 10.6c.5.4.8 1 .8 1.6v.3h6v-.3c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3Z" /></svg>
+  ),
   gift: ({ className }) => (
     <svg {...base} className={className}><rect x="4" y="9" width="16" height="11" rx="1" /><path d="M4 13h16M12 9v11" /><path d="M12 9C10 9 8 8 8 6.5A2 2 0 0 1 12 6a2 2 0 0 1 4 .5C16 8 14 9 12 9z" /></svg>
   ),
@@ -142,8 +157,17 @@ export const NavIcons: Record<string, (p: IconProps) => React.ReactElement> = {
   chevronLeft: ({ className }) => (
     <svg {...base} className={className}><path d="m15 6-6 6 6 6" /></svg>
   ),
+  eye: ({ className }) => (
+    <svg {...base} className={className}><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+  ),
+  eyeOff: ({ className }) => (
+    <svg {...base} className={className}><path d="M10.6 6.7A8.6 8.6 0 0 1 12 6.5c6 0 9.5 6 9.5 6a17 17 0 0 1-3 3.6M6.4 8.1A16.6 16.6 0 0 0 2.5 12.5s3.5 6 9.5 6a8.9 8.9 0 0 0 3.6-.75" /><path d="M10 10.2a3 3 0 0 0 4.2 4.2" /><path d="m3.5 3.5 17 17" /></svg>
+  ),
   bill: ({ className }) => (
     <svg {...base} className={className}><path d="M6 3h12v17l-2.5-1.5L13 20l-2.5-1.5L8 20l-2-1.5z" /><path d="M9.5 8h5M9.5 12h5" /></svg>
+  ),
+  receipt: ({ className }) => (
+    <svg {...base} className={className}><path d="M5 3.5h14v17l-2.3-1.4-2.35 1.4L12 20.6l-2.35 1.3L7.3 20.6 5 20.5z" /><path d="M8.5 8h7M8.5 11.5h7M8.5 15h4" /></svg>
   ),
   ticket: ({ className }) => (
     <svg {...base} className={className}><path d="M4 9V7a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a2.5 2.5 0 0 0 0 5v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a2.5 2.5 0 0 0 0-5z" /><path d="M13 6v3M13 13v5" /></svg>

@@ -86,7 +86,7 @@ const TONE_DOT: Record<Tone, string> = {
 
 const TONE_CHIP: Record<Tone, string> = {
   ok: "bg-pos/12 text-pos",
-  pending: "bg-amber-400/12 text-amber-300",
+  pending: "bg-amber-400/12 text-amber-700",
   bad: "bg-neg/12 text-neg",
   muted: "bg-ink-3 text-fg-muted",
   info: "bg-brand-500/12 text-brand-400",
@@ -213,7 +213,7 @@ export function ActionButton({
       href={href}
       className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
         variant === "solid"
-          ? "bg-brand-500 text-white hover:bg-brand-400"
+          ? "bg-brand-500 text-white hover:bg-brand-600"
           : "border border-line bg-ink-1 text-fg hover:bg-ink-2"
       }`}
     >
@@ -271,6 +271,6 @@ export const fieldClass =
   "w-full rounded-xl border border-line bg-ink-2 px-3.5 py-2.5 text-[15px] text-fg placeholder:text-fg-faint transition focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25";
 export const labelClass = "block text-[13px] font-medium text-fg-muted";
 export const btnPrimary =
-  "rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400 disabled:opacity-60";
+  "rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60";
 export const btnGhost =
   "rounded-xl border border-line bg-ink-1 px-5 py-2.5 text-sm font-semibold text-fg transition hover:bg-ink-2";

@@ -171,7 +171,7 @@ export function ChatWidget({
               />
               <div className="relative flex items-center gap-3">
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white shadow-sm">
-                  <LogoMark className="h-5 w-[4.2ch]" theme="light" />
+                  <LogoMark className="h-5 w-[4.2ch]" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-white">{labels.title}</p>
@@ -211,7 +211,7 @@ export function ChatWidget({
                     conversation rather than a form. */}
                 <div className="flex items-end gap-2 px-4 pt-4">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-navy-100">
-                    <LogoMark className="h-4 w-[3.4ch]" theme="light" />
+                    <LogoMark className="h-4 w-[3.4ch]" />
                   </span>
                   <div className="max-w-[78%] rounded-2xl rounded-bl-md border border-gray-200 bg-white px-3.5 py-2 text-sm leading-relaxed text-navy-900 shadow-sm">
                     {labels.subtitle}

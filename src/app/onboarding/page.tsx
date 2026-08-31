@@ -29,9 +29,9 @@ export default async function OnboardingPage() {
     <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
       <header className="border-b border-white/10 bg-navy-900">
         <div className="mx-auto flex h-16 w-full max-w-3xl items-center justify-between px-6">
-          <Logo theme="dark" href={null} />
+          <Logo href={null} />
           <div className="flex items-center gap-3">
-            <LanguageSwitcher current={locale} variant="dark" />
+            <LanguageSwitcher current={locale} variant="light" />
             <form action={logoutAction}>
               <button className="rounded-xl px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-ink-2">
                 {t.common.signOut}

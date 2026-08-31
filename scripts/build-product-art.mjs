@@ -35,6 +35,10 @@ const PIECES = [
   { out: "tele-banking", file: "ChatGPT Image 24 août 2026, 06_54_16.png", fit: "cover" },
   { out: "money-market", file: "ChatGPT Image 24 août 2026, 07_36_05.png", fit: "cover" },
   { out: "small-business", file: "ChatGPT Image 24 août 2026, 07_40_47.png", fit: "cover" },
+  { out: "auto-loan", file: "auto-loan.png", fit: "cover" },
+  { out: "student-loan", file: "student-loan.png", fit: "cover" },
+  { out: "home-improvement", file: "home-improvement.png", fit: "cover" },
+  { out: "home-equity", file: "home-equity.png", fit: "cover" },
 ];
 
 fs.mkdirSync(OUT, { recursive: true });

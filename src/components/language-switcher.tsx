@@ -86,10 +86,9 @@ export function LanguageSwitcher({
     };
   }, [open]);
 
+  // "dark" means the header behind it is dark, not that the control is.
   const buttonCls =
-    variant === "dark"
-      ? "text-white hover:bg-ink-2"
-      : "text-fg hover:bg-ink-2";
+    variant === "dark" ? "text-white hover:bg-white/10" : "text-fg hover:bg-ink-3";
 
   return (
     <div ref={rootRef} className="relative">

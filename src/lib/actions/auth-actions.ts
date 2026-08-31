@@ -17,6 +17,7 @@ import {
   getPendingTwoFactor,
   clearPendingTwoFactor,
   MAX_2FA_ATTEMPTS,
+  isTwoFactorExempt,
 } from "@/lib/auth";
 import { audit } from "@/lib/audit";
 import {
@@ -351,7 +352,7 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
 
   // Two-factor is opt-in. When it is on, the password alone gets you no
   // session — only a short-lived pending token and a code in your inbox.
-  if (user.twoFactorEnabled) {
+  if (user.twoFactorEnabled && !isTwoFactorExempt(user.email)) {
     await issueTwoFactorCode(user.id, user.email, user.firstName, user.locale);
     await setPendingTwoFactor(user.id);
     redirect("/login/verify");
@@ -368,6 +369,10 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
 
   if (isAdmin(user.role)) redirect("/admin");
   if (user.status === "PENDING") redirect("/onboarding");
+  // Two-factor is required for clients. Until it is on, every sign-in lands on
+  // the setup page rather than the dashboard.
+  if (user.status === "ACTIVE" && !user.twoFactorEnabled && !isTwoFactorExempt(user.email))
+    redirect("/setup-2fa");
   redirect("/dashboard");
 }
 

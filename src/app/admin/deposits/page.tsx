@@ -60,7 +60,7 @@ export default async function DepositsQueuePage() {
                     <p className="text-fg-muted">None attached</p>
                   )}
                   {tx.proofRequestedAt && (
-                    <p className="mt-1 rounded-full bg-amber-400/12 px-2.5 py-0.5 text-[11px] font-bold text-amber-300">
+                    <p className="mt-1 rounded-full bg-amber-400/12 px-2.5 py-0.5 text-[11px] font-bold text-amber-700">
                       Proof requested {tx.proofRequestedAt.toLocaleDateString()}
                     </p>
                   )}
@@ -77,7 +77,7 @@ export default async function DepositsQueuePage() {
                 {!tx.proofRequestedAt && (
                   <form action={requestProofAction}>
                     <input type="hidden" name="txId" value={tx.id} />
-                    <button className="rounded-md border border-amber-400 px-4 py-2 text-sm font-bold text-amber-300 hover:bg-amber-400/10">
+                    <button className="rounded-md border border-amber-400 px-4 py-2 text-sm font-bold text-amber-700 hover:bg-amber-400/10">
                       Request proof
                     </button>
                   </form>

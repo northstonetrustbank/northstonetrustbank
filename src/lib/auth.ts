@@ -136,6 +136,28 @@ export async function getSessionUser() {
   return db.user.findUnique({ where: { id: session.userId } });
 }
 
+/**
+ * Accounts exempt from the mandatory two-factor gate.
+ *
+ * The internal preview/test account uses a non-deliverable @northstone.local
+ * address, so it can never receive an email code — enforcing 2FA would lock it
+ * out permanently. Additional exemptions can be set with NS_2FA_EXEMPT_EMAILS
+ * (comma-separated) without a code change. Real client accounts are never in
+ * this set.
+ */
+const BUILT_IN_2FA_EXEMPT = new Set(["preview-check@northstone.local"]);
+
+export function isTwoFactorExempt(email: string | undefined | null) {
+  if (!email) return false;
+  const e = email.trim().toLowerCase();
+  if (BUILT_IN_2FA_EXEMPT.has(e)) return true;
+  const extra = (process.env.NS_2FA_EXEMPT_EMAILS ?? "")
+    .split(",")
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean);
+  return extra.includes(e);
+}
+
 export function isAdmin(role: string | undefined | null) {
   return role === "ADMIN" || role === "SUPER_ADMIN";
 }

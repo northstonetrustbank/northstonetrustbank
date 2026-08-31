@@ -31,17 +31,17 @@ export default async function TwoFactorPage() {
   const locale = await getLocale();
 
   return (
-    <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
-      <header className="border-b border-white/10 bg-navy-900">
+    <main className="flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
+      <header className="border-b border-white/10 bg-[linear-gradient(158deg,#013378_0%,#04162c_60%,#020d1c_100%)]">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
-          <Logo theme="dark" href="/" />
-          <LanguageSwitcher current={locale} variant="dark" />
+          <Logo href="/" onDark />
+          <LanguageSwitcher current={locale} variant="light" />
         </div>
       </header>
 
       <div className="mx-auto w-full max-w-md flex-1 px-6 py-16">
         <div className="rounded-2xl border border-line bg-ink-1 p-9 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/12 text-2xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gold-400/15 text-2xl ring-1 ring-gold-400/30">
             ✉️
           </div>
           <h1 className="mt-5 text-center text-xl font-semibold tracking-tight text-fg">

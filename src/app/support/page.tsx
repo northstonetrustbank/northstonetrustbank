@@ -101,7 +101,7 @@ export default async function SupportPage({
                   action={
                     <Link
                       href="/support?tab=new"
-                      className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400"
+                      className="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
                     >
                       {t.tickets.newTicket}
                     </Link>

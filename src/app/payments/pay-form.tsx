@@ -151,7 +151,7 @@ export function PayForm({
       <button
         type="submit"
         disabled={pending || !payee}
-        className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-400 disabled:opacity-60"
+        className="w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
       >
         {pending ? labels.submitting : labels.submit}
       </button>

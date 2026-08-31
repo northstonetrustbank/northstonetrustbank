@@ -379,11 +379,11 @@ function SelectedMethod({
 
 function SecurityWordPrompt({ t }: { t: { bank: { securityWordMissing: string; goToAccount: string } } }) {
   return (
-    <div className="mt-6 rounded-xl border border-amber-400/25 bg-amber-400/10 p-5 text-sm text-amber-300">
+    <div className="mt-6 rounded-xl border border-amber-400/25 bg-amber-400/10 p-5 text-sm text-amber-700">
       {t.bank.securityWordMissing}
       <Link
         href="/account/security"
-        className="mt-3 inline-block rounded-xl bg-brand-500 px-5 py-2 text-xs font-bold text-white transition hover:bg-brand-400"
+        className="mt-3 inline-block rounded-xl bg-brand-500 px-5 py-2 text-xs font-bold text-white transition hover:bg-brand-600"
       >
         {t.bank.goToAccount}
       </Link>

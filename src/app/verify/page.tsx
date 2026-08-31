@@ -70,7 +70,7 @@ export default async function VerifyPage({
         <p className="mt-3 text-[15px] leading-relaxed text-fg-muted">{message}</p>
         <Link
           href={ok ? "/onboarding" : "/login"}
-          className="mt-7 inline-block rounded-xl bg-brand-500 px-7 py-3 text-sm font-semibold text-white transition hover:bg-brand-400"
+          className="mt-7 inline-block rounded-xl bg-brand-500 px-7 py-3 text-sm font-semibold text-white transition hover:bg-brand-600"
         >
           {ok ? t.verifyPage.continue : t.common.signIn}
         </Link>

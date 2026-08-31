@@ -179,7 +179,7 @@ export default async function PaymentsPage({
                   </p>
                   <Link
                     href="/payments?tab=payees"
-                    className="mt-5 inline-flex rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400"
+                    className="mt-5 inline-flex rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
                   >
                     {t.payments.addFirstPayee}
                   </Link>

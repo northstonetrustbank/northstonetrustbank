@@ -70,7 +70,7 @@ export default async function GoalsPage({
               />
             </label>
           </div>
-          <button className="mt-4 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-400">
+          <button className="mt-4 rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-600">
             {t.goals.createBtn}
           </button>
         </form>

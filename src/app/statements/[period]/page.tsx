@@ -67,7 +67,7 @@ export default async function StatementPage({
 
         <div className="mt-5 rounded-2xl border border-line bg-ink-1 p-9 shadow-sm print:border-0 print:p-0 print:shadow-none">
           <div className="flex flex-wrap items-start justify-between gap-6 border-b border-line-soft pb-6">
-            <Logo theme="light" href="/dashboard" />
+            <Logo href="/dashboard" />
             <div className="text-right text-sm">
               <p className="font-semibold text-fg">{t.statements.title}</p>
               <p className="mt-0.5 text-fg-muted">

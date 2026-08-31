@@ -22,7 +22,7 @@ export async function MarketingHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-navy-900/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Logo theme="dark" />
+        <Logo onDark />
         <nav className="hidden items-center gap-7 text-sm font-medium text-navy-100 lg:flex">
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="transition hover:text-white">
@@ -59,7 +59,7 @@ export async function MarketingFooter() {
           mailbox addresses are long enough to collide with Legal otherwise. */}
       <div className="mx-auto grid max-w-7xl gap-x-8 gap-y-12 px-6 py-16 sm:grid-cols-2 lg:grid-cols-12">
         <div className="sm:col-span-2 lg:col-span-3">
-          <Logo theme="dark" href={null} />
+          <Logo onDark href={null} />
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-navy-300">
             {t.landing.footerTagline}
           </p>

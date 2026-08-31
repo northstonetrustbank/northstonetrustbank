@@ -70,7 +70,7 @@ export function TwoFactorForm({
           type="submit"
           disabled={pending}
           className={`w-full rounded-xl py-3 text-sm font-semibold text-white transition disabled:opacity-60 ${
-            enabled ? "bg-brand-500 hover:bg-brand-400" : "bg-brand-500 hover:bg-brand-400"
+            enabled ? "bg-brand-500 hover:bg-brand-600" : "bg-brand-500 hover:bg-brand-600"
           }`}
         >
           {enabled ? labels.disable : labels.enable}

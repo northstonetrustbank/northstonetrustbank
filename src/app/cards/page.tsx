@@ -104,7 +104,7 @@ export default async function CardsPage({
                     {cardProduct && (
                       <Link
                         href={`/apply?type=${cardProduct.key}&tier=${tier}`}
-                        className="mt-3 inline-block rounded-xl bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-brand-400"
+                        className="mt-3 inline-block rounded-xl bg-brand-500 px-4 py-2 text-[13px] font-semibold text-white transition hover:bg-brand-600"
                       >
                         {t.products.apply}
                       </Link>
@@ -207,7 +207,7 @@ export default async function CardsPage({
                   type="submit"
                   className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
                     app.frozen
-                      ? "bg-brand-500 text-white hover:bg-brand-400"
+                      ? "bg-brand-500 text-white hover:bg-brand-600"
                       : "border border-line bg-ink-1 text-fg hover:border-brand-500/40"
                   }`}
                 >
@@ -324,8 +324,8 @@ export default async function CardsPage({
               labels={{
                 types: t.bank.types,
                 statuses: t.bank.statuses,
-                vatNeeded: t.vat.needed,
                 reference: t.bank.reference,
+                vatNeeded: t.vat.needed,
               }}
               locale={locale}
               currency={user.currency}

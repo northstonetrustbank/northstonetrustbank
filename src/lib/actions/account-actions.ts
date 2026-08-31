@@ -48,6 +48,34 @@ export async function toggleTwoFactorAction(
   return { ok: enable ? t.twoFactor.enabled : t.twoFactor.disabled };
 }
 
+/**
+ * Turns two-factor on during the mandatory setup right after sign-in. No
+ * password re-entry: the session is minutes old, and enabling protection is a
+ * security-positive action (disabling it, in toggleTwoFactorAction, still
+ * requires the password). Lands the client on the dashboard.
+ */
+export async function enableTwoFactorSetupAction(
+  _prev: FormState,
+  _formData: FormData
+): Promise<FormState> {
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  if (!user.twoFactorEnabled) {
+    await db.user.update({
+      where: { id: user.id },
+      data: { twoFactorEnabled: true, twoFactorEnabledAt: new Date() },
+    });
+    await audit({
+      actorId: user.id,
+      actorLabel: user.email,
+      action: "TWO_FACTOR_ENABLED",
+      targetType: "USER",
+      targetId: user.id,
+    });
+  }
+  redirect("/dashboard");
+}
+
 export async function changePasswordAction(
   _prev: FormState,
   formData: FormData

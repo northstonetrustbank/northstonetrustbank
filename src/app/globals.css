@@ -123,7 +123,10 @@ body {
 
   --color-fg: #04162c; /* primary text — the deep face of the mark */
   --color-fg-muted: #4c6485; /* secondary text */
-  --color-fg-faint: #6b7f9c; /* captions, disabled */
+  /* Captions and disabled text. Measured on the page ground, not on white:
+     #6b7f9c is 4.08:1 on a card but only 3.76:1 on ink-0, and most captions sit
+     on the ground. This clears 4.5:1 on ink-0, ink-1 and ink-2 alike. */
+  --color-fg-faint: #5d6f87;
 
   /* The 400 step is the hover tone. On a dark ground hover lifts toward white,
      so upstream it is the lightest of the three; on a light ground hover has to
@@ -134,10 +137,16 @@ body {
   --color-brand-500: #046bd4;
   --color-brand-600: #04478c;
 
-  /* Rewards and bonuses — the chip gold from the card faces, darkened so it
-     still reads against a light surface. A gift never wears the same blue as
-     a balance. */
-  --color-gift: #a3761c;
+  /* Rewards, bonuses and anything held at a gate — the chip gold from the card
+     faces. A gift never wears the same blue as a balance.
+
+     Only --color-gold has to pass contrast as type on a light surface; the
+     numbered steps are fills on navy, where the relationship is inverted and a
+     light tone is the readable one. */
+  --color-gold-300: #f0d089;
+  --color-gold-400: #e0b15c;
+  --color-gold-500: #c9a227;
+  --color-gold: #a3761c;
   --color-pos: #0e8a53;
   --color-neg: #c93b30;
 }
@@ -191,6 +200,24 @@ body {
    (inverted picker icons, repainted dropdowns) are not needed. */
 .scheme-dark {
   color-scheme: light;
+}
+
+/* A <select>'s dropdown is painted by the browser from the element's own
+   background-color, so a transparent control ignores the surface it sits on.
+   Belt and braces alongside the utility class each field carries. */
+.scheme-dark select,
+.scheme-dark option,
+.scheme-dark optgroup {
+  background-color: var(--color-ink-1);
+  color: var(--color-fg);
+}
+
+/* The calendar icon is dark by default, which is right on a light field — it
+   only needs holding back so it does not compete with the value. */
+.scheme-dark input[type="date"]::-webkit-calendar-picker-indicator,
+.scheme-dark input[type="time"]::-webkit-calendar-picker-indicator,
+.scheme-dark input[type="month"]::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
 }
 
 /* Autofill paints its own yellow-white unless it is told otherwise. */

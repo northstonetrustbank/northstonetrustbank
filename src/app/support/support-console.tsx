@@ -59,7 +59,7 @@ export function SupportConsole({
       <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-white px-5 py-4">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white ring-1 ring-navy-100">
-            <LogoMark className="h-5 w-[4.2ch]" theme="light" />
+            <LogoMark className="h-5 w-[4.2ch]" />
           </span>
           <div>
             <p className="text-sm font-semibold text-navy-900">{labels.agent}</p>

@@ -181,7 +181,7 @@ export default async function ActivityPage({
             </label>
           </div>
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            <button className="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400">
+            <button className="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600">
               {t.activity.apply}
             </button>
             <Link

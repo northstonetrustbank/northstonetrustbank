@@ -76,6 +76,24 @@ export type ProductDef = {
   fields?: FieldDef[];
   /** Supporting paperwork this product asks for. */
   docs?: DocRequirement[];
+  /**
+   * What the product is advertised at, and the bounds an application has to
+   * fall inside. Published on the product tile and enforced on submit — until
+   * these existed the only floor was "more than zero", which is how a 26-cent
+   * mortgage reached the applications queue.
+   */
+  terms?: LendingTerms;
+};
+
+export type LendingTerms = {
+  /** Headline rate, as a percentage. Displayed as "from X% APR". */
+  aprFrom: number;
+  minCents: number;
+  maxCents: number;
+  /** A typical ask, shown as an editable placeholder — never enforced. */
+  typicalCents: number;
+  minTermMonths: number;
+  maxTermMonths: number;
 };
 
 // Asked on every application — the basics any bank wants up front.
@@ -100,6 +118,20 @@ export const SHARED_FIELDS: FieldDef[] = [
   },
 ];
 
+/**
+ * Rates and bounds, kept together so the loans page, the product page and the
+ * application guard all quote the same numbers. Adjusting a rate is one edit.
+ */
+const TERMS = {
+  PERSONAL_LOAN: { aprFrom: 5.99, minCents: 500_000, maxCents: 5_000_000, typicalCents: 1000000, minTermMonths: 24, maxTermMonths: 84 },
+  MORTGAGE: { aprFrom: 3.25, minCents: 5_000_000, maxCents: 100_000_000, typicalCents: 25000000, minTermMonths: 180, maxTermMonths: 360 },
+  AUTO_LOAN: { aprFrom: 2.99, minCents: 300_000, maxCents: 10_000_000, typicalCents: 2500000, minTermMonths: 36, maxTermMonths: 84 },
+  STUDENT_LOAN: { aprFrom: 3.75, minCents: 100_000, maxCents: 20_000_000, typicalCents: 1500000, minTermMonths: 60, maxTermMonths: 240 },
+  HOME_EQUITY: { aprFrom: 4.5, minCents: 1_000_000, maxCents: 50_000_000, typicalCents: 5000000, minTermMonths: 60, maxTermMonths: 360 },
+  HOME_IMPROVEMENT: { aprFrom: 4.99, minCents: 500_000, maxCents: 15_000_000, typicalCents: 2000000, minTermMonths: 24, maxTermMonths: 120 },
+  BUSINESS_LOAN: { aprFrom: 4.25, minCents: 1_000_000, maxCents: 500_000_000, typicalCents: 5000000, minTermMonths: 12, maxTermMonths: 300 },
+} as const;
+
 export const PERSONAL_PRODUCTS: ProductDef[] = [
   {
     key: "CREDIT_CARD",
@@ -118,7 +150,26 @@ export const PERSONAL_PRODUCTS: ProductDef[] = [
     credit: "installment",
     art: "contract",
     icon: "lending",
-    fields: [{ name: "purpose", kind: "textarea" }],
+    terms: TERMS.PERSONAL_LOAN,
+    fields: [
+      {
+        name: "loanPurpose",
+        kind: "select",
+        required: true,
+        options: [
+          "DEBT_CONSOLIDATION",
+          "HOME_IMPROVEMENT",
+          "MAJOR_PURCHASE",
+          "MEDICAL",
+          "VEHICLE",
+          "WEDDING",
+          "TRAVEL",
+          "EDUCATION",
+          "OTHER",
+        ],
+      },
+      { name: "purpose", kind: "textarea" },
+    ],
     docs: [
       ...IDENTITY_DOCS,
       ...INCOME_DOCS,
@@ -135,6 +186,7 @@ export const PERSONAL_PRODUCTS: ProductDef[] = [
     credit: "installment",
     art: "house",
     icon: "mortgage",
+    terms: TERMS.MORTGAGE,
     fields: [
       {
         name: "propertyType",
@@ -156,6 +208,106 @@ export const PERSONAL_PRODUCTS: ProductDef[] = [
       { key: "PROOF_OF_DEPOSIT", required: true },
       { key: "DEBT_DOCUMENTATION" },
       { key: "PROPERTY_INSURANCE" },
+    ],
+  },
+  {
+    key: "AUTO_LOAN",
+    kind: "apply",
+    amount: true,
+    term: true,
+    credit: "installment",
+    art: "auto",
+    icon: "lending",
+    terms: TERMS.AUTO_LOAN,
+    fields: [
+      { name: "vehicleMake", kind: "text", required: true },
+      { name: "vehicleYear", kind: "number", required: true },
+      { name: "vehiclePrice", kind: "money", required: true },
+      { name: "downPayment", kind: "money" },
+      {
+        name: "vehicleCondition",
+        kind: "select",
+        required: true,
+        options: ["NEW", "USED"],
+      },
+    ],
+    docs: [
+      ...IDENTITY_DOCS,
+      ...INCOME_DOCS,
+      // The car is the security, so the bank wants to see it exists.
+      { key: "VEHICLE_REGISTRATION", showIf: { field: "vehicleCondition", equals: ["USED"] } },
+      { key: "VEHICLE_VALUATION", showIf: { field: "vehicleCondition", equals: ["USED"] } },
+      { key: "DRIVING_LICENCE", required: true },
+    ],
+  },
+  {
+    key: "STUDENT_LOAN",
+    kind: "apply",
+    amount: true,
+    term: true,
+    credit: "installment",
+    art: "student",
+    icon: "lending",
+    terms: TERMS.STUDENT_LOAN,
+    fields: [
+      { name: "institutionName", kind: "text", required: true },
+      { name: "courseOfStudy", kind: "text", required: true },
+      { name: "courseYears", kind: "number", required: true },
+      {
+        name: "studyLevel",
+        kind: "select",
+        required: true,
+        options: ["UNDERGRADUATE", "POSTGRADUATE", "VOCATIONAL"],
+      },
+    ],
+    docs: [
+      ...IDENTITY_DOCS,
+      // A student rarely has income of their own, so the guarantor carries it.
+      { key: "GUARANTOR_DETAILS", required: true },
+      { key: "BANK_STATEMENTS", required: true },
+    ],
+  },
+  {
+    key: "HOME_IMPROVEMENT",
+    kind: "apply",
+    amount: true,
+    term: true,
+    credit: "installment",
+    art: "renovation",
+    icon: "mortgage",
+    terms: TERMS.HOME_IMPROVEMENT,
+    fields: [
+      { name: "worksDescription", kind: "textarea", required: true },
+      { name: "propertyLocation", kind: "text", required: true },
+      {
+        name: "housingStatus",
+        kind: "select",
+        required: true,
+        options: ["OWN_OUTRIGHT", "OWN_MORTGAGE"],
+      },
+    ],
+    docs: [...IDENTITY_DOCS, ...INCOME_DOCS, { key: "TITLE_DEED", required: true }],
+  },
+  {
+    key: "HOME_EQUITY",
+    kind: "apply",
+    amount: true,
+    term: true,
+    credit: "installment",
+    art: "equity",
+    icon: "mortgage",
+    terms: TERMS.HOME_EQUITY,
+    fields: [
+      { name: "propertyLocation", kind: "text", required: true },
+      { name: "propertyPrice", kind: "money", required: true },
+      { name: "outstandingMortgage", kind: "money", required: true },
+    ],
+    docs: [
+      ...IDENTITY_DOCS,
+      ...INCOME_DOCS,
+      { key: "TITLE_DEED", required: true },
+      { key: "VALUATION_REPORT", required: true },
+      { key: "DEBT_DOCUMENTATION", required: true },
     ],
   },
   {

@@ -5,7 +5,7 @@ import { NavIcons } from "@/components/icons";
 // Shared ledger table — used on the dashboard and on every product page.
 
 const statusStyles: Record<string, string> = {
-  PENDING: "bg-amber-400/12 text-amber-300",
+  PENDING: "bg-amber-400/12 text-amber-700",
   POSTED: "bg-pos/12 text-pos",
   REJECTED: "bg-neg/12 text-neg",
 };
@@ -98,7 +98,7 @@ export function TransactionList({
                   <span
                     className={`mt-1 inline-block rounded-lg px-2 py-0.5 text-[11px] font-semibold ${
                       awaitingVat(tx)
-                        ? "bg-gift/15 text-gift"
+                        ? "bg-gold/15 text-gold"
                         : (statusStyles[tx.status] ?? "")
                     }`}
                   >

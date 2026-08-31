@@ -87,7 +87,7 @@ function AgentAvatar({ className = "h-7 w-7" }: { className?: string }) {
     <span
       className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white ring-1 ring-navy-100 ${className}`}
     >
-      <LogoMark className="h-4 w-[3.4ch]" theme="light" />
+      <LogoMark className="h-4 w-[3.4ch]" />
     </span>
   );
 }

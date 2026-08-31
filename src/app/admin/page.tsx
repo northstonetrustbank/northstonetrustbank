@@ -192,7 +192,7 @@ export default async function ReviewQueuePage() {
                       {u.createdAt.toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
-                      <span className="rounded-full bg-amber-400/12 px-2.5 py-1 text-xs font-bold text-amber-300">
+                      <span className="rounded-full bg-amber-400/12 px-2.5 py-1 text-xs font-bold text-amber-700">
                         {!u.emailVerified ? "Email verification" : "Identity document"}
                       </span>
                     </td>

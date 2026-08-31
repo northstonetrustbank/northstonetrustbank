@@ -71,7 +71,7 @@ export function AdminChatConsole({ conversationId }: { conversationId: string })
           placeholder="Type your reply…"
           className="flex-1 rounded-xl border border-line bg-ink-2 px-4 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
         />
-        <button className="rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white transition hover:bg-brand-400">
+        <button className="rounded-xl bg-brand-500 px-5 py-2 text-sm font-bold text-white transition hover:bg-brand-600">
           Send
         </button>
       </form>

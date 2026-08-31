@@ -19,10 +19,13 @@ export function MobileDrawer({
   children,
   openLabel,
   closeLabel,
+  onDark = false,
 }: {
   children: React.ReactNode;
   openLabel: string;
   closeLabel: string;
+  /** White hamburger for a gradient header. */
+  onDark?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -86,7 +89,9 @@ export function MobileDrawer({
         type="button"
         onClick={() => setOpen(true)}
         aria-label={openLabel}
-        className="rounded-xl p-2 text-fg-muted transition hover:bg-ink-2 lg:hidden"
+        className={`rounded-xl p-2 transition lg:hidden ${
+          onDark ? "text-white hover:bg-white/15" : "text-fg-muted hover:bg-ink-2"
+        }`}
       >
         <NavIcons.menu className="h-5 w-5" />
       </button>

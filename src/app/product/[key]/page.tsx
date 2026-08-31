@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getSessionUser, isAdmin } from "@/lib/auth";
 import { openSavingsAction, toggleFreezeAction } from "@/lib/actions/product-actions";
-import { balanceCents, formatMoney, getSavings } from "@/lib/bank";
+import { balanceCents, formatMoney, formatMoneyWhole, getSavings } from "@/lib/bank";
 import { getDict, getLocale } from "@/i18n/server";
 import { fill } from "@/i18n";
 import { productDef, productLabel, docsFor } from "@/lib/products";
@@ -81,6 +81,7 @@ export default async function ProductPage({
         })
       : [];
   const outstanding = docItems.filter((d) => d.required && !d.uploaded).length;
+
   const showDocs = docItems.length > 0 && (app?.status === "SUBMITTED" || outstanding > 0);
   const savingsBal = savings ? await balanceCents(savings.id) : 0;
 
@@ -97,6 +98,18 @@ export default async function ProductPage({
     currency: user.currency,
     holderName: `${user.firstName} ${user.lastName}`.trim(),
   });
+
+  // The required paperwork, shown on an unopened product so a client sees what
+  // they will be asked for before they start.
+  const applyDocs =
+    view.state === "APPLY"
+      ? docsFor(def, {})
+          .filter((r) => r.required)
+          .map((r) => ({
+            key: r.key,
+            name: t.docs.names[r.key as keyof typeof t.docs.names] ?? r.key,
+          }))
+      : [];
 
   const dateFmt = new Intl.DateTimeFormat(
     { en: "en-US", fr: "fr-FR", de: "de-DE", es: "es-ES" }[locale],
@@ -237,15 +250,19 @@ export default async function ProductPage({
               )
             ) : (
               view.render === "tile" && (
-                <ProductTile
-                  title={view.title}
-                  art={view.art}
-                  valueLabel={view.valueLabel}
-                  value={view.value}
-                  status={view.status}
-                  placeholder={view.placeholder}
-                  cta={null}
-                />
+                // A modest hero, not a half-screen panel — capped and centred
+                // on a phone so the page leads with the terms, not a picture.
+                <div className="mx-auto max-w-[260px] lg:max-w-none">
+                  <ProductTile
+                    title={view.title}
+                    art={view.art}
+                    valueLabel={view.valueLabel}
+                    value={view.value}
+                    status={view.status}
+                    placeholder={view.placeholder}
+                    cta={null}
+                  />
+                </div>
               )
             )}
           </div>
@@ -270,12 +287,63 @@ export default async function ProductPage({
             {/* --- Not opened yet --- */}
             {view.state === "APPLY" && (
               <div className="mt-6">
-                <p className="rounded-lg border border-line bg-ink-2 px-4 py-3 text-sm text-fg-muted">
+                {/* The published terms — a client should see the rate, the
+                    ceiling and the term before opening an application, not a
+                    bare Apply button. */}
+                {def.terms && (
+                  // Rate as the hero, the ceiling and term stacked beside it —
+                  // each figure on its own line so nothing can collide the way
+                  // a rigid three-column strip did ("$150,0002–10y").
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-ink-2 p-5">
+                    <div>
+                      <p className="tnum text-[32px] font-bold leading-none text-gold">
+                        {def.terms.aprFrom}%
+                      </p>
+                      <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-faint">
+                        {t.loansPage.aprFrom}
+                      </p>
+                    </div>
+                    <dl className="space-y-1.5 text-right text-[13px]">
+                      <div className="flex items-baseline justify-end gap-2">
+                        <dt className="text-fg-muted">{t.loansPage.amountLabel}</dt>
+                        <dd className="tnum font-semibold text-fg">
+                          {formatMoneyWhole(def.terms.maxCents, locale, user.currency)}
+                        </dd>
+                      </div>
+                      <div className="flex items-baseline justify-end gap-2">
+                        <dt className="text-fg-muted">{t.loansPage.termLabel}</dt>
+                        <dd className="tnum font-semibold text-fg">
+                          {Math.round(def.terms.minTermMonths / 12)}–
+                          {Math.round(def.terms.maxTermMonths / 12)}
+                          {t.loansPage.yearsShort}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+                )}
+
+                {/* What you'll be asked for, so nobody starts an application
+                    they can't finish. */}
+                {applyDocs.length > 0 && (
+                  <div className="mt-5">
+                    <p className="text-[13px] font-semibold text-fg">{t.products.whatYouNeed}</p>
+                    <ul className="mt-2.5 space-y-2">
+                      {applyDocs.map((d) => (
+                        <li key={d.key} className="flex items-start gap-2.5 text-[13px] text-fg-muted">
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
+                          {d.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="mt-5 rounded-lg border border-line bg-ink-2 px-4 py-3 text-sm text-fg-muted">
                   {t.products.verifyNote}
                 </p>
                 <Link
                   href={`/apply?type=${def.key}`}
-                  className="mt-5 block rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-400"
+                  className="mt-5 block rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-600"
                 >
                   {t.products.apply}
                 </Link>
@@ -290,7 +358,7 @@ export default async function ProductPage({
                 </p>
                 <Link
                   href={`/apply?type=${def.key}`}
-                  className="mt-5 block rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-400"
+                  className="mt-5 block rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-600"
                 >
                   {t.products.reapply}
                 </Link>
@@ -299,7 +367,7 @@ export default async function ProductPage({
 
             {view.state === "REVIEW" && app && (
               <div className="mt-6">
-                <p className="rounded-lg border border-amber-100 bg-amber-400/10 px-4 py-3 text-sm text-amber-300">
+                <p className="rounded-lg border border-amber-100 bg-amber-400/10 px-4 py-3 text-sm text-amber-700">
                   {t.products.reviewNote}
                 </p>
                 <dl className="mt-4 divide-y divide-line-soft">
@@ -334,7 +402,7 @@ export default async function ProductPage({
                 <p className="rounded-lg border border-line bg-ink-2 px-4 py-3 text-sm text-fg-muted">
                   {t.products.openSavingsNote}
                 </p>
-                <button className="mt-5 w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white transition hover:bg-brand-400">
+                <button className="mt-5 w-full rounded-xl bg-brand-500 py-3 text-sm font-semibold text-white transition hover:bg-brand-600">
                   {t.products.openSavingsCta}
                 </button>
               </form>
@@ -357,7 +425,7 @@ export default async function ProductPage({
                 <div className="mt-5 flex flex-wrap gap-3">
                   <Link
                     href="/transfer"
-                    className="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-400"
+                    className="rounded-xl bg-brand-500 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
                   >
                     {t.bank.transfer}
                   </Link>
@@ -379,7 +447,7 @@ export default async function ProductPage({
                 </p>
                 <Link
                   href="/deposit"
-                  className="mt-5 block rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-400"
+                  className="mt-5 block rounded-xl bg-brand-500 py-3 text-center text-sm font-semibold text-white transition hover:bg-brand-600"
                 >
                   {t.bank.makeDeposit}
                 </Link>
@@ -431,7 +499,7 @@ export default async function ProductPage({
                       <input type="hidden" name="appId" value={app.id} />
                       <button
                         className={`w-full rounded-xl py-3 text-sm font-semibold text-white transition ${
-                          app.frozen ? "bg-brand-500 hover:bg-brand-400" : "bg-brand-500 hover:bg-brand-400"
+                          app.frozen ? "bg-brand-500 hover:bg-brand-600" : "bg-brand-500 hover:bg-brand-600"
                         }`}
                       >
                         {app.frozen ? t.products.unfreezeCard : t.products.freezeCard}
@@ -464,7 +532,7 @@ export default async function ProductPage({
               <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3">
                 <p className="text-sm font-semibold text-amber-900">{t.docs.requestedTitle}</p>
                 {app.docsNote && (
-                  <p className="mt-1 text-sm text-amber-300">{app.docsNote}</p>
+                  <p className="mt-1 text-sm text-amber-700">{app.docsNote}</p>
                 )}
               </div>
             )}
@@ -507,8 +575,8 @@ export default async function ProductPage({
                 labels={{
                   types: t.bank.types,
                   statuses: t.bank.statuses,
-                  vatNeeded: t.vat.needed,
                   reference: t.bank.reference,
+                  vatNeeded: t.vat.needed,
                 }}
                 locale={locale}
                 currency={user.currency}
