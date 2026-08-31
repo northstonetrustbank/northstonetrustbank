@@ -128,7 +128,7 @@ export async function AppShell({
     user.role === "CLIENT" &&
     user.status === "ACTIVE" &&
     !user.twoFactorEnabled &&
-    !isTwoFactorExempt(user.email)
+    !isTwoFactorExempt(user)
   ) {
     redirect("/setup-2fa");
   }

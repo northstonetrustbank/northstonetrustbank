@@ -145,17 +145,33 @@ export async function getSessionUser() {
  * (comma-separated) without a code change. Real client accounts are never in
  * this set.
  */
-const BUILT_IN_2FA_EXEMPT = new Set(["preview-check@northstone.local"]);
+const BUILT_IN_2FA_EXEMPT = new Set([
+  // Non-deliverable address — it could never receive a code.
+  "preview-check@northstone.local",
+  // The owner's own test account, exempted at their request.
+  "dicedblak@gmail.com",
+]);
 
-export function isTwoFactorExempt(email: string | undefined | null) {
+export function isTwoFactorExempt(user: {
+  email?: string | null;
+  role?: string | null;
+}) {
+  // Staff are exempt by role, not by address, so the exemption survives a new
+  // admin being added or the owner's address changing. Both gates that force
+  // setup are client-only anyway; this makes that a rule rather than a
+  // consequence of the order the checks happen to run in.
+  if (user.role && user.role !== "CLIENT") return true;
+
+  const email = user.email?.trim().toLowerCase();
   if (!email) return false;
-  const e = email.trim().toLowerCase();
-  if (BUILT_IN_2FA_EXEMPT.has(e)) return true;
+  if (BUILT_IN_2FA_EXEMPT.has(email)) return true;
+
+  // Further exemptions without a code change.
   const extra = (process.env.NS_2FA_EXEMPT_EMAILS ?? "")
     .split(",")
     .map((x) => x.trim().toLowerCase())
     .filter(Boolean);
-  return extra.includes(e);
+  return extra.includes(email);
 }
 
 export function isAdmin(role: string | undefined | null) {
