@@ -1,7 +1,7 @@
 export const en = {
   common: {
     brand: "NORTHSTONE",
-    brandLight: "Financial Group",
+    brandLight: "Trust Bank",
     signIn: "Sign in",
     signOut: "Sign out",
     openAccount: "Open an account",

@@ -190,7 +190,7 @@ export function BankCard({
             className="mt-0.5 font-medium uppercase tracking-[0.32em]"
             style={{ color: face.inkSoft, fontSize: "2.9cqw", lineHeight: 1.2 }}
           >
-            Financial Group
+            Trust Bank
           </p>
         </div>
         {badge && (

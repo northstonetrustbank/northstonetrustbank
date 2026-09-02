@@ -756,8 +756,8 @@ export default async function DashboardPage({
               chooseTitle={t.dashboard.emailChoose}
               supportLabel={t.dashboard.emailSupportTeam}
               managerLabel={t.dashboard.emailManager}
-              supportEmail="support@trustlinefinancialgroup.com"
-              managerEmail="accountmanager@trustlinefinancialgroup.com"
+              supportEmail="support@northstonetrustbank.com"
+              managerEmail="accountmanager@northstonetrustbank.com"
               subject={t.dashboard.emailSubject}
             />
           </div>

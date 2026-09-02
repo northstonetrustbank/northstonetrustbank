@@ -3,7 +3,7 @@ import type { Dict } from "./index";
 export const fr: Dict = {
   common: {
     brand: "NORTHSTONE",
-    brandLight: "Financial Group",
+    brandLight: "Trust Bank",
     signIn: "Se connecter",
     signOut: "Se déconnecter",
     openAccount: "Ouvrir un compte",
