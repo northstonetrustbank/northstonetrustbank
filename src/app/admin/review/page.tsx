@@ -5,6 +5,7 @@ import {
   rejectAccountAction,
   deleteKycDocumentsAction,
 } from "@/lib/actions/admin-actions";
+import { formatAddress, readSsn } from "@/lib/pii";
 
 const DOC_LABELS: Record<string, string> = {
   GOVERNMENT_ID: "National ID card",
@@ -73,7 +74,21 @@ export default async function ReviewQueuePage() {
                   </p>
                   <p className="text-sm text-gray-600">{u.email}</p>
                   <p className="text-sm text-gray-600">{u.phone}</p>
-                  <p className="mt-1 text-xs text-gray-500">
+                  {/* What they told us about themselves — the document above is
+                      what confirms it, so the two belong on one screen. */}
+                  <dl className="mt-3 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
+                    <dt className="font-semibold text-gray-500">SSN</dt>
+                    <dd className="tnum text-navy-800">
+                      {readSsn(u.ssnEnc) ?? (
+                        <span className="text-gray-400">not given</span>
+                      )}
+                    </dd>
+                    <dt className="font-semibold text-gray-500">Address</dt>
+                    <dd className="text-navy-800">
+                      {formatAddress(u) ?? <span className="text-gray-400">not given</span>}
+                    </dd>
+                  </dl>
+                  <p className="mt-2 text-xs text-gray-500">
                     Applied {u.createdAt.toLocaleString()} &middot;{" "}
                     <span className="text-green-700">email confirmed</span>
                     {" · writes to us in "}

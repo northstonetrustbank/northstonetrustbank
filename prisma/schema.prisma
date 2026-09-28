@@ -23,6 +23,27 @@ model User {
   firstName    String
   lastName     String
   phone        String
+
+  // ── Customer identification ──────────────────────────────────────────────
+  // A bank has to know who holds the account, not just that they hold a
+  // document. Collected on the second onboarding step and shown to staff on
+  // the review screen.
+  //
+  // The SSN is never stored in the clear: this column holds AES-256-GCM
+  // ciphertext and the key lives in the environment, so a leaked dump or an
+  // old backup is not a pile of identities. Staff still see the full number —
+  // the app decrypts it to render the review screen. See src/lib/pii.ts.
+  ssnEnc       String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  region       String? // state or province
+  postalCode   String?
+  country      String?
+  // Set when the client completes that step. Kept as a timestamp rather than
+  // derived from the columns above so the gate has one thing to check and a
+  // half-filled row can never read as complete.
+  identityGivenAt DateTime?
   role         String  @default("CLIENT") // CLIENT | ADMIN | SUPER_ADMIN
   accountType  String  @default("PERSONAL") // PERSONAL | COMMERCIAL
   status       String  @default("PENDING") // PENDING | ACTIVE | BLOCKED | REJECTED

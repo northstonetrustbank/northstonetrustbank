@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import { formatMoney } from "@/lib/bank";
+import { formatAddress, readSsn } from "@/lib/pii";
 import {
   blockAccountAction,
   unblockAccountAction,
@@ -87,6 +88,13 @@ export default async function ClientsPage() {
                     {u.email} · {u.phone}
                     {checking ? ` · ${checking.number}` : ""}
                     {u.accounts.some((a) => a.kind === "SAVINGS") ? " · +Savings" : ""}
+                  </p>
+                  <p className="mt-1 text-sm text-fg-muted">
+                    <span className="font-semibold">SSN</span>{" "}
+                    <span className="tnum text-fg">{readSsn(u.ssnEnc) ?? "—"}</span>
+                    {" · "}
+                    <span className="font-semibold">Address</span>{" "}
+                    <span className="text-fg">{formatAddress(u) ?? "—"}</span>
                   </p>
                   {u.statusReason && (
                     <p className="mt-1 text-xs text-fg-muted">{u.statusReason}</p>

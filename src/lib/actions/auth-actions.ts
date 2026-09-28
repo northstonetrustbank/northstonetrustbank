@@ -20,6 +20,7 @@ import {
   isTwoFactorExempt,
 } from "@/lib/auth";
 import { audit } from "@/lib/audit";
+import { encryptSsn, normaliseSsn, ssnProblem } from "@/lib/pii";
 import {
   sendWelcomeEmail,
   sendKycReceivedEmail,
@@ -224,6 +225,81 @@ export async function submitKycAction(_prev: FormState, formData: FormData): Pro
 
   await sendKycReceivedEmail(user.email, user.firstName, user.locale);
 
+  revalidatePath("/onboarding");
+  return null;
+}
+
+/**
+ * The customer identification step: who the account holder actually is.
+ *
+ * Serves two callers. A new applicant reaches it as the second onboarding step,
+ * before their documents. The clients who signed up before this step existed
+ * reach the same form from /complete-profile, gated on their way to the
+ * dashboard — so both routes have to be allowed here, and the redirect at the
+ * end has to send each of them somewhere sensible.
+ */
+export async function submitIdentityAction(
+  _prev: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const t = await getDict();
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  if (isAdmin(user.role)) redirect("/admin");
+  if (user.status !== "PENDING" && user.status !== "ACTIVE") redirect("/login");
+
+  const text = (field: string, max = 120) =>
+    String(formData.get(field) ?? "").trim().slice(0, max);
+
+  const digits = normaliseSsn(text("ssn", 20));
+  const problem = ssnProblem(digits);
+  if (problem === "length") return { error: t.identity.ssnLength };
+  if (problem === "invalid") return { error: t.identity.ssnInvalid };
+
+  const addressLine1 = text("addressLine1");
+  const addressLine2 = text("addressLine2");
+  const city = text("city", 80);
+  const region = text("region", 80);
+  const postalCode = text("postalCode", 20);
+  const country = text("country", 80);
+  if (!addressLine1 || !city || !postalCode || !country) {
+    return { error: t.identity.addressRequired };
+  }
+
+  // Already on the account from signup; shown here so it can be corrected
+  // rather than asked for twice.
+  const phone = text("phone", 40);
+  if (phone.replace(/[^0-9]/g, "").length < 7) return { error: t.identity.phoneInvalid };
+
+  await db.user.update({
+    where: { id: user.id },
+    data: {
+      ssnEnc: encryptSsn(digits),
+      addressLine1,
+      addressLine2: addressLine2 || null,
+      city,
+      region: region || null,
+      postalCode,
+      country,
+      phone,
+      identityGivenAt: new Date(),
+    },
+  });
+
+  // Never the number itself, here or anywhere else that gets written down.
+  await audit({
+    actorId: user.id,
+    actorLabel: user.email,
+    action: "IDENTITY_SUBMITTED",
+    targetType: "USER",
+    targetId: user.id,
+    details: `Customer identification details provided (SSN on file, ${city}, ${country})`,
+  });
+
+  if (user.status === "ACTIVE") {
+    revalidatePath("/dashboard");
+    redirect("/dashboard");
+  }
   revalidatePath("/onboarding");
   return null;
 }

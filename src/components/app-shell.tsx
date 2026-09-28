@@ -22,6 +22,7 @@ type ShellUser = {
   role: string;
   status: string;
   twoFactorEnabled: boolean;
+  identityGivenAt: Date | null;
 };
 
 /**
@@ -131,6 +132,13 @@ export async function AppShell({
     !isTwoFactorExempt(user)
   ) {
     redirect("/setup-2fa");
+  }
+
+  // Customer identification details. Clients who opened an account before this
+  // step existed are asked once, on their way in. Same shape as the gate above:
+  // the page it sends them to renders outside AppShell, so there is no loop.
+  if (user.role === "CLIENT" && user.status === "ACTIVE" && !user.identityGivenAt) {
+    redirect("/complete-profile");
   }
 
   const t = await getDict();

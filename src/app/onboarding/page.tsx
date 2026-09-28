@@ -8,6 +8,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { Logo } from "@/components/logo";
 import { VerifyEmailStep } from "./verify-email-step";
 import { KycStep } from "./kyc-step";
+import { IdentityStep } from "./identity-step";
 
 export const metadata = { title: "Get started — Northstone Trust Bank" };
 
@@ -22,8 +23,16 @@ export default async function OnboardingPage() {
   const locale = await getLocale();
   const kycCount = await db.kycDocument.count({ where: { userId: user.id } });
 
-  // Step: 0 = verify email, 1 = KYC, 2 = under review
-  const step = !user.emailVerified ? 0 : kycCount === 0 ? 1 : 2;
+  // Step: 0 = verify email, 1 = their details, 2 = KYC, 3 = under review.
+  // Details come before the documents on purpose: the document is what
+  // corroborates what they told us, so it is worth having their answer first.
+  const step = !user.emailVerified
+    ? 0
+    : !user.identityGivenAt
+      ? 1
+      : kycCount === 0
+        ? 2
+        : 3;
 
   return (
     <main className="scheme-dark flex min-h-screen flex-1 flex-col bg-ink-0 text-fg">
@@ -82,6 +91,13 @@ export default async function OnboardingPage() {
           )}
 
           {step === 1 && (
+            <IdentityStep
+              labels={t.identity}
+              defaults={{ phone: user.phone, country: user.country ?? "United States" }}
+            />
+          )}
+
+          {step === 2 && (
             <KycStep
               title={t.onboarding.kycTitle}
               body={t.onboarding.kycBody}
@@ -102,7 +118,7 @@ export default async function OnboardingPage() {
             />
           )}
 
-          {step === 2 && (
+          {step === 3 && (
             <div className="text-center">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-500/12 text-2xl">
                 ⏳
